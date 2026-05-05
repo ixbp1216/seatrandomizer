@@ -478,6 +478,7 @@ body {
     var hasResult = false;
     var dragSource = null;    // { kind: 'bank'|'seat', num, r, c }
     var condSeatClipboard = null; // saved allowedSeats list for copying between students
+    var viewSelectedRC = null; // selected seat on the result screen for click-to-swap
 
     // ====== HELPERS ======
     function trim(s) { return String(s).replace(/^\s+|\s+$/g, ''); }
@@ -1012,6 +1013,7 @@ body {
         document.getElementById('nextBtn').onclick = function () {
             // entering random fresh: clear prior result so we initially show current seats
             hasResult = false;
+            viewSelectedRC = null;
             state = 'random'; render();
         };
         attachBankInteractions(currentSeats);
@@ -1183,7 +1185,7 @@ body {
         html += '</div></div>';
         app.innerHTML = html;
 
-        document.getElementById('backBtn').onclick = function () { state = 'currentSeats'; render(); };
+        document.getElementById('backBtn').onclick = function () { viewSelectedRC = null; state = 'currentSeats'; render(); };
         document.getElementById('optPair').onchange = function () {
             randomOptions.noSamePair = document.getElementById('optPair').checked;
         };
@@ -1197,6 +1199,27 @@ body {
         };
         document.getElementById('saveBtn').onclick = saveToFile;
         document.getElementById('loadBtn').onclick = function () { openLoadDialog('loadFileR'); };
+
+        // click-to-swap: only active when showing the new arrangement (hasResult)
+        if (hasResult) {
+            attachSeatBoardClicks('resultBoard', function (r, c) {
+                var vn = newSeats[r][c];
+                if (!enabledSeats[r][c]) { viewSelectedRC = null; render(); return; }
+                if (vn == null) { viewSelectedRC = null; render(); return; }
+                if (!viewSelectedRC) {
+                    viewSelectedRC = { r: r, c: c };
+                } else if (viewSelectedRC.r === r && viewSelectedRC.c === c) {
+                    viewSelectedRC = null;
+                } else {
+                    var sr = viewSelectedRC.r, sc = viewSelectedRC.c;
+                    var t = newSeats[r][c];
+                    newSeats[r][c] = newSeats[sr][sc];
+                    newSeats[sr][sc] = t;
+                    viewSelectedRC = null;
+                }
+                render();
+            });
+        }
     }
 
     function doRandomArrangement() {
@@ -1233,6 +1256,7 @@ body {
         }
         newSeats = result;
         hasResult = true;
+        viewSelectedRC = null;
         render();
     }
 
@@ -1460,6 +1484,7 @@ body {
                             cellLabel = '';
                         } else {
                             cellClass += ' filled' + genderTag((students[vn] || {}).gender || 'M');
+                            if (!opts.useCurrent && viewSelectedRC && viewSelectedRC.r === r && viewSelectedRC.c === c) cellClass += ' selected';
                             var sObj = students[vn] || {};
                             var nm = sObj.name || '';
                             if (nm === '') {
@@ -1578,6 +1603,7 @@ body {
             if (parseLoadedText(text)) {
                 state = 'random';
                 hasResult = true;
+                viewSelectedRC = null;
                 render();
             }
         };
