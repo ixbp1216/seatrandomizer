@@ -1,0 +1,1710 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>자리 바꾸기</title>
+<style type="text/css">
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #20242a;
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    overflow: auto;
+}
+#app {
+    width: 100%;
+    min-height: 100%;
+    display: table;
+}
+.screen {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+.panel {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    background: #2b3138;
+    border-radius: 18px;
+    padding: 30px 24px;
+    box-sizing: border-box;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+.title {
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 1.35;
+    margin-bottom: 18px;
+}
+.subtitle {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #d9e2ef;
+    margin-bottom: 18px;
+}
+.bigtext {
+    font-size: 30px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+.small {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #b9c4d2;
+}
+.hint {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #aeb8c5;
+}
+.dim {
+    color: #8f9aaa;
+}
+.inputbox {
+    width: 100%;
+    max-width: 420px;
+    height: 50px;
+    padding: 0 14px;
+    font-size: 20px;
+    border: 1px solid #455063;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: #1d2127;
+    color: #ffffff;
+    outline: none;
+}
+.configbox {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: 46px;
+    padding: 0 14px;
+    font-size: 18px;
+    border: 1px solid #455063;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: #1d2127;
+    color: #ffffff;
+    outline: none;
+}
+.configwrap {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    text-align: left;
+}
+.configrow {
+    margin-bottom: 14px;
+}
+.configlabel {
+    display: block;
+    font-size: 16px;
+    color: #d9e2ef;
+    margin-bottom: 7px;
+}
+.checkline {
+    margin-top: 4px;
+    font-size: 18px;
+    color: #ffffff;
+    display: block;
+    text-align: left;
+}
+.checkline input {
+    vertical-align: middle;
+    margin-right: 8px;
+}
+.controls {
+    margin-top: 18px;
+}
+.button {
+    display: inline-block;
+    margin: 8px 6px 0 6px;
+    padding: 13px 22px;
+    border: 0;
+    border-radius: 12px;
+    background: #2b6ee7;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.button:hover,
+.numbtn:hover {
+    background: #245fc8;
+}
+.backbtn {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    margin: 0;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #4c5a72;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.backbtn:hover {
+    background: #3f4c61;
+}
+.button:disabled {
+    background: #2f3742;
+    color: #6b7585;
+    cursor: default;
+}
+.button:disabled:hover,
+.numbtn.disabled:hover {
+    background: #2f3742;
+}
+.button.secondary {
+    background: #4c5a72;
+}
+.button.secondary:hover {
+    background: #3f4c61;
+}
+.button.danger {
+    background: #c93a3a;
+}
+.button.danger:hover {
+    background: #b23232;
+}
+.fileinput {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+.grid {
+    margin: 18px auto 0 auto;
+    text-align: center;
+    max-width: 720px;
+}
+.numbtn {
+    display: inline-block;
+    width: 92px;
+    height: 48px;
+    margin: 7px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 12px;
+    background: #2b6ee7;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 48px;
+    vertical-align: top;
+    cursor: pointer;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.numbtn.disabled {
+    background: #444c58;
+    color: #9aa3b1;
+    cursor: default;
+}
+.numbtn.cond {
+    background: #c97a2b;
+}
+.numbtn.cond:hover {
+    background: #b86a20;
+}
+.toolbar {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #3b4350;
+    text-align: center;
+}
+.seatBoard {
+    display: inline-block;
+    margin: 16px auto 8px auto;
+    padding: 12px;
+    background: #1a1d22;
+    border-radius: 14px;
+    border: 1px solid #3b4350;
+}
+.seatRow {
+    white-space: nowrap;
+    margin-bottom: 6px;
+}
+.seatRow:last-child {
+    margin-bottom: 0;
+}
+.seatCell {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 76px;
+    height: 60px;
+    margin: 0 1px;
+    vertical-align: middle;
+    background: #1d2127;
+    border: 1px solid #455063;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    padding: 0 4px;
+}
+.cellNum {
+    font-size: 11px;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.1;
+    margin-bottom: 2px;
+}
+.cellName {
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1.15;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.seatCell.disabled {
+    background: #15171b;
+    border-style: dashed;
+    color: #4a525e;
+    cursor: pointer;
+}
+.seatCell.empty {
+    background: #1d2127;
+    color: #6f7b8a;
+}
+.seatCell.filled {
+    background: #2b6ee7;
+    color: #ffffff;
+}
+.seatCell.filledM {
+    background: #2b6ee7;
+}
+.seatCell.filledF {
+    background: #d04a78;
+}
+.seatCell.selected {
+    outline: 3px solid #ffd166;
+    outline-offset: -3px;
+}
+.seatCell.allowed {
+    background: #1f4a8a;
+    border-color: #ffd166;
+}
+.seatCell.dragover {
+    outline: 3px dashed #ffd166;
+    outline-offset: -3px;
+}
+.deskGap {
+    display: inline-block;
+    width: 14px;
+    height: 1px;
+    vertical-align: middle;
+}
+.frontLabel {
+    font-size: 13px;
+    color: #8f9aaa;
+    margin-bottom: 8px;
+    text-align: center;
+    letter-spacing: 4px;
+}
+
+/* student bank for drag-drop */
+.studentBank {
+    margin: 14px auto 6px auto;
+    max-width: 720px;
+    padding: 10px;
+    background: #1a1d22;
+    border-radius: 12px;
+    border: 1px solid #3b4350;
+    text-align: center;
+    min-height: 50px;
+}
+.bankSlot {
+    display: inline-block;
+    width: 84px;
+    height: 36px;
+    margin: 4px;
+    padding: 0 6px;
+    background: #2b6ee7;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 36px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+    vertical-align: middle;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+.bankSlot.M { background: #2b6ee7; }
+.bankSlot.F { background: #d04a78; }
+.bankSlot.N { background: #5e6b80; }
+.bankSlot.selected {
+    outline: 3px solid #ffd166;
+    outline-offset: -3px;
+}
+.bankEmpty {
+    color: #8f9aaa;
+    font-size: 14px;
+    line-height: 36px;
+}
+
+/* condition editor */
+.condSection {
+    margin: 14px auto;
+    padding: 14px;
+    max-width: 600px;
+    background: #1a1d22;
+    border-radius: 12px;
+    border: 1px solid #3b4350;
+    text-align: left;
+}
+.condSectionTitle {
+    font-size: 17px;
+    font-weight: bold;
+    color: #ffd166;
+    margin-bottom: 10px;
+}
+.condSection.disabled {
+    opacity: 0.45;
+}
+.radioLine {
+    display: inline-block;
+    margin-right: 18px;
+    font-size: 16px;
+}
+.radioLine input {
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.miniCell {
+    width: 56px;
+    height: 42px;
+    font-size: 13px;
+}
+
+@media screen and (max-width: 800px) {
+    .panel {
+        padding: 24px 14px;
+    }
+    .title {
+        font-size: 24px;
+    }
+    .seatCell {
+        width: 54px;
+        height: 48px;
+        font-size: 13px;
+        margin: 0 1px;
+        padding: 0 2px;
+    }
+    .deskGap {
+        width: 8px;
+    }
+    .miniCell {
+        width: 44px;
+        height: 36px;
+        font-size: 12px;
+    }
+    .cellNum {
+        font-size: 9px;
+        margin-bottom: 1px;
+    }
+    .cellName {
+        font-size: 12px;
+    }
+    .numbtn {
+        width: 76px;
+        font-size: 16px;
+    }
+    .bankSlot {
+        width: 72px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="text/javascript">
+(function () {
+    // ====== STATE ======
+    var rows = 5;
+    var cols = 6;
+    var studentCount = 30;
+    var absentNumbers = [];
+    var participants = [];
+    var students = {};        // num -> { name: '', gender: 'M'|'F' }
+    var enabledSeats = [];    // 2D bool
+    var conditions = {};      // num -> { mustPairWith:null|num, pairGender:''|'M'|'F', allowedSeats:[{r,c}] }
+    var currentSeats = [];    // 2D, num or null  (drag-drop 'before random')
+    var newSeats = [];        // 2D, num or null  (random result / loaded)
+    var state = 'menu';
+    var setupIndex = 0;       // for name entry
+    var conditionEditNum = null;
+    var selectedBankNum = null;
+    var selectedSeatRC = null;
+    var randomOptions = { noSamePair: false, noSameSeat: false };
+    var hasResult = false;
+    var dragSource = null;    // { kind: 'bank'|'seat', num, r, c }
+    var condSeatClipboard = null; // saved allowedSeats list for copying between students
+
+    // ====== HELPERS ======
+    function trim(s) { return String(s).replace(/^\s+|\s+$/g, ''); }
+    function escapeHtml(v) {
+        return String(v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+    function escapeTextName(v) { return String(v).replace(/"/g, '""'); }
+    function shuffle(arr) {
+        var i, j, t;
+        for (i = arr.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+        }
+    }
+    function clone2D(grid) {
+        var out = [], i;
+        for (i = 0; i < grid.length; i++) out.push(grid[i].slice(0));
+        return out;
+    }
+    function emptyGrid(value) {
+        var out = [], r, c, row;
+        for (r = 0; r < rows; r++) {
+            row = [];
+            for (c = 0; c < cols; c++) row.push(value);
+            out.push(row);
+        }
+        return out;
+    }
+    function isAbsent(num) {
+        var i;
+        for (i = 0; i < absentNumbers.length; i++) if (absentNumbers[i] === num) return true;
+        return false;
+    }
+    function buildParticipants() {
+        var i;
+        participants = [];
+        for (i = 1; i <= studentCount; i++) if (!isAbsent(i)) participants.push(i);
+    }
+    function parseAbsentList(text, maxCount) {
+        var raw = trim(text), parts, result = [], seen = {}, i, item, num;
+        if (raw === '') return result;
+        parts = raw.split(',');
+        for (i = 0; i < parts.length; i++) {
+            item = trim(parts[i]);
+            if (item === '') continue;
+            if (!/^\d+$/.test(item)) return null;
+            num = parseInt(item, 10);
+            if (num < 1 || num > maxCount) return null;
+            if (!seen[num]) { seen[num] = true; result.push(num); }
+        }
+        result.sort(function (a, b) { return a - b; });
+        return result;
+    }
+    function getAbsentText() { return absentNumbers.join(','); }
+    function genderTag(g) { return g === 'F' ? 'F' : 'M'; }
+    function getStudentLabel(num) {
+        var s = students[num] || {};
+        var name = s.name || '';
+        if (name === '') return num + '번';
+        return num + ' ' + name;
+    }
+    function getStudentShort(num) {
+        var s = students[num] || {};
+        var name = s.name || '';
+        if (name === '') return num + '번';
+        if (name.length > 4) return num + ' ' + name.substring(0, 4);
+        return num + ' ' + name;
+    }
+
+    // pair-mate seat for a given (r,c): the other seat of the same desk pair
+    function getMate(r, c) {
+        var pc = c % 2 === 0 ? c + 1 : c - 1;
+        if (pc < 0 || pc >= cols) return null;
+        return { r: r, c: pc };
+    }
+
+    function resetSeatsToSize() {
+        enabledSeats = emptyGrid(true);
+        currentSeats = emptyGrid(null);
+        newSeats = emptyGrid(null);
+    }
+
+    function ensureCondition(num) {
+        if (!conditions[num]) {
+            conditions[num] = { mustPairWith: null, pairGender: '', allowedSeats: [] };
+        }
+        return conditions[num];
+    }
+
+    // ====== RENDERING DISPATCH ======
+    function render() {
+        var app = document.getElementById('app');
+        if (state === 'menu') renderMenu(app);
+        else if (state === 'name') renderName(app);
+        else if (state === 'enable') renderEnable(app);
+        else if (state === 'condList') renderCondList(app);
+        else if (state === 'condEdit') renderCondEdit(app);
+        else if (state === 'currentSeats') renderCurrentSeats(app);
+        else if (state === 'random') renderRandom(app);
+    }
+
+    // ====== MENU ======
+    function renderMenu(app) {
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<div class="title">자리 바꾸기</div>';
+        html += '<div class="configwrap">';
+        html += '<div class="configrow"><label class="configlabel" for="rowsInput">행 수</label>';
+        html += '<input id="rowsInput" class="configbox" type="text" value="' + escapeHtml(rows) + '"></div>';
+        html += '<div class="configrow"><label class="configlabel" for="colsInput">열 수</label>';
+        html += '<input id="colsInput" class="configbox" type="text" value="' + escapeHtml(cols) + '"></div>';
+        html += '<div class="configrow"><label class="configlabel" for="countInput">학생 수</label>';
+        html += '<input id="countInput" class="configbox" type="text" value="' + escapeHtml(studentCount) + '"></div>';
+        html += '<div class="configrow"><label class="configlabel" for="absentInput">결번</label>';
+        html += '<input id="absentInput" class="configbox" type="text" value="' + escapeHtml(getAbsentText()) + '" placeholder="예: 3, 7, 12"></div>';
+        html += '</div>';
+        html += '<div class="controls">';
+        html += '<button id="startBtn" class="button">다음</button>';
+        html += '<input id="loadFileMenu" class="fileinput" type="file" accept=".txt">';
+        html += '<button id="loadBtnMenu" class="button secondary">불러오기</button>';
+        html += '</div>';
+        html += '</div></div>';
+        app.innerHTML = html;
+        document.getElementById('startBtn').onclick = applyMenuConfigAndStart;
+        document.getElementById('loadBtnMenu').onclick = function () { openLoadDialog('loadFileMenu'); };
+        document.getElementById('rowsInput').focus();
+    }
+
+    function applyMenuConfigAndStart() {
+        var rText = trim(document.getElementById('rowsInput').value);
+        var cText = trim(document.getElementById('colsInput').value);
+        var nText = trim(document.getElementById('countInput').value);
+        var aText = document.getElementById('absentInput').value;
+        if (!/^\d+$/.test(rText) || !/^\d+$/.test(cText)) {
+            alert('행과 열은 1 이상의 숫자로 입력해 주세요.'); return;
+        }
+        var rN = parseInt(rText, 10), cN = parseInt(cText, 10);
+        if (rN < 1 || rN > 30 || cN < 1 || cN > 30) {
+            alert('행과 열은 1 이상 30 이하로 입력해 주세요.'); return;
+        }
+        if (!/^\d+$/.test(nText)) {
+            alert('총 학생 수는 1 이상의 숫자로 입력해 주세요.'); return;
+        }
+        var nN = parseInt(nText, 10);
+        if (nN < 1 || nN > 999) {
+            alert('총 학생 수는 1 이상 999 이하로 입력해 주세요.'); return;
+        }
+        var pa = parseAbsentList(aText, nN);
+        if (pa === null) {
+            alert('결번 목록은 1부터 총 학생 수 사이의 숫자를 쉼표로 구분해 입력해 주세요.'); return;
+        }
+        rows = rN; cols = cN; studentCount = nN; absentNumbers = pa;
+        buildParticipants();
+        if (participants.length < 1) {
+            alert('참여 인원이 1명 이상이어야 합니다.'); return;
+        }
+        if (participants.length > rows * cols) {
+            alert('자리 수보다 학생 수가 많습니다.'); return;
+        }
+        students = {};
+        conditions = {};
+        resetSeatsToSize();
+        setupIndex = 0;
+        state = 'name';
+        render();
+    }
+
+    // ====== NAME / GENDER ENTRY ======
+    function renderName(app) {
+        var num = participants[setupIndex];
+        var s = students[num] || { name: '', gender: 'M' };
+        var atFirst = setupIndex <= 0;
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<button class="backbtn" id="backBtn">이전</button>';
+        html += '<div class="title">' + num + '번</div>';
+        html += '<div style="height:14px"></div>';
+        html += '<input id="nameInput" class="inputbox" type="text" value="' + escapeHtml(s.name) + '" maxlength="20" placeholder="이름">';
+        html += '<div style="height:14px"></div>';
+        html += '<div class="configwrap" style="text-align:center;max-width:420px;">';
+        html += '<label class="radioLine"><input type="radio" name="genderRadio" value="M"' + (s.gender !== 'F' ? ' checked' : '') + '>남자</label>';
+        html += '<label class="radioLine"><input type="radio" name="genderRadio" value="F"' + (s.gender === 'F' ? ' checked' : '') + '>여자</label>';
+        html += '</div>';
+        html += '<div class="controls">';
+        html += '<button id="prevStudentBtn" class="button secondary"' + (atFirst ? ' disabled' : '') + '>이전</button>';
+        html += '<button id="nextStudentBtn" class="button">다음</button>';
+        html += '</div>';
+        html += '</div></div>';
+        app.innerHTML = html;
+
+        var input = document.getElementById('nameInput');
+        input.focus();
+        input.select();
+
+        document.getElementById('backBtn').onclick = function () {
+            saveCurrentName();
+            state = 'menu'; render();
+        };
+        document.getElementById('nextStudentBtn').onclick = function () {
+            saveCurrentName();
+            moveNextName();
+        };
+        var prevBtn = document.getElementById('prevStudentBtn');
+        prevBtn.onclick = function () {
+            if (atFirst) return;
+            saveCurrentName();
+            setupIndex--;
+            render();
+        };
+        input.onkeydown = function (e) {
+            e = e || window.event;
+            var k = e.keyCode || e.which;
+            if (k === 13) { document.getElementById('nextStudentBtn').onclick(); return false; }
+        };
+    }
+
+    function readSelectedGender() {
+        var radios = document.getElementsByName('genderRadio');
+        var i;
+        for (i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value;
+        return 'M';
+    }
+
+    function saveCurrentName() {
+        var num = participants[setupIndex];
+        var ni = document.getElementById('nameInput');
+        if (!ni) return;
+        var name = trim(ni.value);
+        var g = readSelectedGender();
+        students[num] = { name: name, gender: g };
+    }
+
+    function moveNextName() {
+        setupIndex++;
+        if (setupIndex >= participants.length) {
+            state = 'enable';
+            setupIndex = 0;
+        }
+        render();
+    }
+
+    // ====== ENABLE SEATS ======
+    function renderEnable(app) {
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<button class="backbtn" id="backBtn">이전</button>';
+        html += '<div class="title">자리 사용 여부</div>';
+        html += '<div class="frontLabel">칠판</div>';
+        html += renderSeatBoardHtml('enableBoard', { mode: 'enable' });
+        html += '<div class="controls">';
+        html += '<button id="allOnBtn" class="button secondary">전체 사용</button>';
+        html += '<button id="nextBtn" class="button">다음</button>';
+        html += '</div>';
+        html += '</div></div>';
+        app.innerHTML = html;
+        document.getElementById('backBtn').onclick = function () {
+            setupIndex = participants.length - 1; state = 'name'; render();
+        };
+        document.getElementById('allOnBtn').onclick = function () {
+            enabledSeats = emptyGrid(true); render();
+        };
+        document.getElementById('nextBtn').onclick = function () {
+            if (countEnabled() < participants.length) {
+                alert('활성화된 자리 수가 학생 수보다 적습니다.'); return;
+            }
+            // initialize newSeats and currentSeats grids of correct size, keep prior data when possible
+            ensureSeatGridShape();
+            // make sure all conditions exist and valid against current grid
+            sanitizeConditionsAgainstGrid();
+            state = 'condList'; render();
+        };
+        attachSeatBoardClicks('enableBoard', function (r, c) {
+            enabledSeats[r][c] = !enabledSeats[r][c];
+            // if turning off and a student was placed, clear placement
+            if (!enabledSeats[r][c]) {
+                if (currentSeats[r] && currentSeats[r][c] != null) currentSeats[r][c] = null;
+                if (newSeats[r] && newSeats[r][c] != null) newSeats[r][c] = null;
+            }
+            render();
+        });
+    }
+
+    function countEnabled() {
+        var r, c, n = 0;
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) if (enabledSeats[r][c]) n++;
+        return n;
+    }
+
+    function ensureSeatGridShape() {
+        // resize/preserve grids to (rows, cols)
+        var r, c;
+        var ng;
+        if (!currentSeats || currentSeats.length !== rows || (currentSeats[0] && currentSeats[0].length !== cols)) {
+            ng = emptyGrid(null); currentSeats = ng;
+        }
+        if (!newSeats || newSeats.length !== rows || (newSeats[0] && newSeats[0].length !== cols)) {
+            ng = emptyGrid(null); newSeats = ng;
+        }
+    }
+
+    function sanitizeConditionsAgainstGrid() {
+        var num, c, kept, i, p;
+        for (num in conditions) {
+            if (!conditions.hasOwnProperty(num)) continue;
+            c = conditions[num];
+            if (!c) continue;
+            // remove allowedSeats that are no longer in bounds or disabled
+            kept = [];
+            for (i = 0; i < (c.allowedSeats || []).length; i++) {
+                p = c.allowedSeats[i];
+                if (p.r < rows && p.c < cols && enabledSeats[p.r][p.c]) kept.push(p);
+            }
+            c.allowedSeats = kept;
+            // mustPairWith must be participant
+            if (c.mustPairWith != null) {
+                if (participants.indexOf(c.mustPairWith) < 0) c.mustPairWith = null;
+            }
+        }
+    }
+
+    // ====== CONDITION LIST ======
+    function renderCondList(app) {
+        var i, num, hasCond;
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<button class="backbtn" id="backBtn">이전</button>';
+        html += '<div class="title">자리 조건 설정</div>';
+        html += '<div class="grid">';
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            hasCond = conditionHasAny(num);
+            html += '<button class="numbtn' + (hasCond ? ' cond' : '') + '" id="cond_' + num + '">' + num + '</button>';
+        }
+        html += '</div>';
+        html += '<div class="toolbar">';
+        html += '<button id="clearAllBtn" class="button secondary">전체 초기화</button>';
+        html += '<button id="nextBtn" class="button">다음</button>';
+        html += '</div>';
+        html += '</div></div>';
+        app.innerHTML = html;
+        document.getElementById('backBtn').onclick = function () { state = 'enable'; render(); };
+        document.getElementById('clearAllBtn').onclick = function () {
+            if (!confirm('모든 조건을 초기화합니다. 진행할까요?')) return;
+            conditions = {}; render();
+        };
+        document.getElementById('nextBtn').onclick = function () {
+            state = 'currentSeats'; render();
+        };
+        for (i = 0; i < participants.length; i++) attachCondBtn(participants[i]);
+    }
+    function attachCondBtn(num) {
+        var b = document.getElementById('cond_' + num);
+        if (!b) return;
+        b.onclick = function () {
+            conditionEditNum = num; state = 'condEdit'; render();
+        };
+    }
+    function conditionHasAny(num) {
+        var c = conditions[num];
+        if (!c) return false;
+        if (c.mustPairWith != null) return true;
+        if (c.pairGender) return true;
+        if (c.allowedSeats && c.allowedSeats.length > 0) return true;
+        return false;
+    }
+
+    // ====== CONDITION EDIT ======
+    function renderCondEdit(app) {
+        var num = conditionEditNum;
+        var c = ensureCondition(num);
+        var locked = c.mustPairWith != null;
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<button class="backbtn" id="backBtn">이전</button>';
+        html += '<div class="title">' + escapeHtml(getStudentLabel(num)) + '</div>';
+
+        // (c) must pair with
+        html += '<div class="condSection"><div class="condSectionTitle">강제 짝</div>';
+        html += '<select id="forceSelect" class="configbox" style="max-width:300px;">';
+        html += '<option value="">없음</option>';
+        var i, p;
+        for (i = 0; i < participants.length; i++) {
+            p = participants[i];
+            if (p === num) continue;
+            html += '<option value="' + p + '"' + (c.mustPairWith === p ? ' selected' : '') + '>' + escapeHtml(getStudentLabel(p)) + '</option>';
+        }
+        html += '</select></div>';
+
+        // (a) gender
+        html += '<div class="condSection' + (locked ? ' disabled' : '') + '"><div class="condSectionTitle">짝 성별</div>';
+        html += '<label class="radioLine"><input type="radio" name="cgender" value=""' + (c.pairGender === '' ? ' checked' : '') + (locked ? ' disabled' : '') + '>없음</label>';
+        html += '<label class="radioLine"><input type="radio" name="cgender" value="M"' + (c.pairGender === 'M' ? ' checked' : '') + (locked ? ' disabled' : '') + '>남자</label>';
+        html += '<label class="radioLine"><input type="radio" name="cgender" value="F"' + (c.pairGender === 'F' ? ' checked' : '') + (locked ? ' disabled' : '') + '>여자</label>';
+        html += '</div>';
+
+        // (b) allowed seats
+        html += '<div class="condSection' + (locked ? ' disabled' : '') + '"><div class="condSectionTitle">자리 제한</div>';
+        html += renderSeatBoardHtml('allowedBoard', { mode: 'allowed', num: num, mini: true });
+        html += '<div style="text-align:center;margin-top:8px;">';
+        html += '<button id="clearAllowedBtn" class="button secondary"' + (locked ? ' disabled' : '') + '>해제</button>';
+        html += '<button id="copyAllowedBtn" class="button secondary"' + (locked ? ' disabled' : '') + '>저장</button>';
+        html += '<button id="pasteAllowedBtn" class="button secondary"' + ((locked || !condSeatClipboard) ? ' disabled' : '') + '>불러오기</button>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div class="controls">';
+        html += '<button id="saveCondBtn" class="button">저장</button>';
+        html += '<button id="resetCondBtn" class="button danger">초기화</button>';
+        html += '</div>';
+        html += '</div></div>';
+        app.innerHTML = html;
+
+        document.getElementById('backBtn').onclick = function () { state = 'condList'; render(); };
+        document.getElementById('saveCondBtn').onclick = function () { saveCondEdit(); state = 'condList'; render(); };
+        document.getElementById('resetCondBtn').onclick = function () {
+            // also remove pair from partner if linked
+            var cur = conditions[num];
+            if (cur && cur.mustPairWith != null) {
+                var partner = cur.mustPairWith;
+                if (conditions[partner] && conditions[partner].mustPairWith === num) {
+                    conditions[partner].mustPairWith = null;
+                }
+            }
+            conditions[num] = { mustPairWith: null, pairGender: '', allowedSeats: [] };
+            render();
+        };
+        document.getElementById('forceSelect').onchange = function () {
+            // live update
+            var v = document.getElementById('forceSelect').value;
+            c.mustPairWith = v === '' ? null : parseInt(v, 10);
+            render();
+        };
+        document.getElementById('clearAllowedBtn').onclick = function () {
+            if (locked) return;
+            c.allowedSeats = []; render();
+        };
+        document.getElementById('copyAllowedBtn').onclick = function () {
+            if (locked) return;
+            var arr = [], k;
+            for (k = 0; k < c.allowedSeats.length; k++) {
+                arr.push({ r: c.allowedSeats[k].r, c: c.allowedSeats[k].c });
+            }
+            condSeatClipboard = arr;
+            render();
+        };
+        document.getElementById('pasteAllowedBtn').onclick = function () {
+            if (locked) return;
+            if (!condSeatClipboard) return;
+            var arr = [], k, p;
+            for (k = 0; k < condSeatClipboard.length; k++) {
+                p = condSeatClipboard[k];
+                if (p.r < rows && p.c < cols && enabledSeats[p.r] && enabledSeats[p.r][p.c]) {
+                    arr.push({ r: p.r, c: p.c });
+                }
+            }
+            c.allowedSeats = arr;
+            render();
+        };
+        attachSeatBoardClicks('allowedBoard', function (r, cc) {
+            if (locked) return;
+            if (!enabledSeats[r][cc]) return;
+            // toggle
+            var found = -1, k;
+            for (k = 0; k < c.allowedSeats.length; k++) {
+                if (c.allowedSeats[k].r === r && c.allowedSeats[k].c === cc) { found = k; break; }
+            }
+            if (found >= 0) c.allowedSeats.splice(found, 1);
+            else c.allowedSeats.push({ r: r, c: cc });
+            render();
+        });
+    }
+    function saveCondEdit() {
+        var num = conditionEditNum;
+        var c = ensureCondition(num);
+        var radios = document.getElementsByName('cgender'), i;
+        var g = '';
+        for (i = 0; i < radios.length; i++) if (radios[i].checked) { g = radios[i].value; break; }
+        c.pairGender = g;
+        // sync mustPairWith bidirectionally
+        var v = document.getElementById('forceSelect').value;
+        var newPair = v === '' ? null : parseInt(v, 10);
+        // first, if previously had a pair partner that's different, clear theirs
+        var oldPair = c.mustPairWith;
+        c.mustPairWith = newPair;
+        if (oldPair != null && oldPair !== newPair) {
+            if (conditions[oldPair] && conditions[oldPair].mustPairWith === num) {
+                conditions[oldPair].mustPairWith = null;
+            }
+        }
+        if (newPair != null) {
+            ensureCondition(newPair).mustPairWith = num;
+        }
+    }
+
+    // ====== CURRENT SEATS (drag-drop) ======
+    function renderCurrentSeats(app) {
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<button class="backbtn" id="backBtn">이전</button>';
+        html += '<div class="title">현재 자리 배치</div>';
+        html += renderStudentBankHtml();
+        html += '<div class="frontLabel">칠판</div>';
+        html += renderSeatBoardHtml('currentBoard', { mode: 'currentSeats' });
+        html += '<div class="controls">';
+        html += '<button id="clearBtn" class="button secondary">비우기</button>';
+        html += '<button id="autoBtn" class="button secondary">번호순</button>';
+        html += '<button id="nextBtn" class="button">다음</button>';
+        html += '</div>';
+        html += '</div></div>';
+        app.innerHTML = html;
+        document.getElementById('backBtn').onclick = function () { state = 'condList'; render(); };
+        document.getElementById('clearBtn').onclick = function () {
+            currentSeats = emptyGrid(null); selectedBankNum = null; selectedSeatRC = null; render();
+        };
+        document.getElementById('autoBtn').onclick = function () {
+            // fill participants in order into enabled seats row by row
+            var i = 0, r, c;
+            currentSeats = emptyGrid(null);
+            for (r = 0; r < rows; r++) {
+                for (c = 0; c < cols; c++) {
+                    if (enabledSeats[r][c] && i < participants.length) {
+                        currentSeats[r][c] = participants[i]; i++;
+                    }
+                }
+            }
+            selectedBankNum = null; selectedSeatRC = null; render();
+        };
+        document.getElementById('nextBtn').onclick = function () {
+            // entering random fresh: clear prior result so we initially show current seats
+            hasResult = false;
+            state = 'random'; render();
+        };
+        attachBankInteractions(currentSeats);
+        attachSeatBoardInteractions('currentBoard', currentSeats);
+    }
+
+    function renderStudentBankHtml() {
+        // show participants not yet placed in currentSeats
+        var placed = {}, r, c, i, num;
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+            if (currentSeats[r][c] != null) placed[currentSeats[r][c]] = true;
+        }
+        var html = '<div class="studentBank" id="studentBank">';
+        var any = false;
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            if (placed[num]) continue;
+            any = true;
+            var s = students[num] || { gender: 'M' };
+            var sel = selectedBankNum === num ? ' selected' : '';
+            html += '<button class="bankSlot ' + genderTag(s.gender) + sel + '" data-num="' + num + '" data-kind="bank">' + escapeHtml(getStudentShort(num)) + '</button>';
+        }
+        if (!any) html += '<span class="bankEmpty">모든 학생이 배치되었습니다.</span>';
+        html += '</div>';
+        return html;
+    }
+
+    function attachBankInteractions(grid) {
+        var bank = document.getElementById('studentBank');
+        if (!bank) return;
+        var slots = bank.getElementsByClassName('bankSlot'), i;
+        for (i = 0; i < slots.length; i++) {
+            (function (slot) {
+                var num = parseInt(slot.getAttribute('data-num'), 10);
+                slot.onclick = function () {
+                    if (selectedBankNum === num) selectedBankNum = null;
+                    else { selectedBankNum = num; selectedSeatRC = null; }
+                    render();
+                };
+                slot.draggable = true;
+                slot.ondragstart = function (e) {
+                    dragSource = { kind: 'bank', num: num };
+                    if (e.dataTransfer) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        try { e.dataTransfer.setData('text/plain', String(num)); } catch (err) {}
+                    }
+                };
+                slot.ondragend = function () { dragSource = null; };
+            })(slots[i]);
+        }
+        // drop on the bank to remove from seat
+        bank.ondragover = function (e) { e.preventDefault(); };
+        bank.ondrop = function (e) {
+            e.preventDefault();
+            if (!dragSource) return;
+            if (dragSource.kind === 'seat') {
+                grid[dragSource.r][dragSource.c] = null;
+                render();
+            }
+            dragSource = null;
+        };
+    }
+
+    function attachSeatBoardInteractions(boardId, grid) {
+        var board = document.getElementById(boardId);
+        if (!board) return;
+        var cells = board.getElementsByClassName('seatCell'), i;
+        for (i = 0; i < cells.length; i++) {
+            (function (cell) {
+                var r = parseInt(cell.getAttribute('data-r'), 10);
+                var c = parseInt(cell.getAttribute('data-c'), 10);
+                cell.onclick = function () {
+                    if (!enabledSeats[r][c]) return;
+                    handleSeatClick(grid, r, c);
+                };
+                cell.draggable = true;
+                cell.ondragstart = function (e) {
+                    if (!enabledSeats[r][c]) { e.preventDefault(); return; }
+                    if (grid[r][c] == null) { e.preventDefault(); return; }
+                    dragSource = { kind: 'seat', r: r, c: c, num: grid[r][c] };
+                    if (e.dataTransfer) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        try { e.dataTransfer.setData('text/plain', String(grid[r][c])); } catch (err) {}
+                    }
+                };
+                cell.ondragend = function () { dragSource = null; };
+                cell.ondragover = function (e) {
+                    if (!enabledSeats[r][c]) return;
+                    e.preventDefault();
+                    cell.classList.add('dragover');
+                };
+                cell.ondragleave = function () { cell.classList.remove('dragover'); };
+                cell.ondrop = function (e) {
+                    e.preventDefault();
+                    cell.classList.remove('dragover');
+                    if (!enabledSeats[r][c]) return;
+                    if (!dragSource) return;
+                    if (dragSource.kind === 'bank') {
+                        // place num at (r,c). If there was someone, kick them to bank.
+                        var moving = dragSource.num;
+                        // find existing position of moving (should be none since coming from bank)
+                        grid[r][c] = moving;
+                    } else if (dragSource.kind === 'seat') {
+                        if (dragSource.r === r && dragSource.c === c) { dragSource = null; return; }
+                        var src = grid[dragSource.r][dragSource.c];
+                        var dst = grid[r][c];
+                        grid[r][c] = src;
+                        grid[dragSource.r][dragSource.c] = dst;
+                    }
+                    dragSource = null;
+                    render();
+                };
+            })(cells[i]);
+        }
+    }
+
+    function handleSeatClick(grid, r, c) {
+        // click logic for placing/swapping
+        if (selectedBankNum != null) {
+            // place selected bank student here, kick previous to bank
+            grid[r][c] = selectedBankNum;
+            selectedBankNum = null;
+            render();
+            return;
+        }
+        if (selectedSeatRC) {
+            var sr = selectedSeatRC.r, sc = selectedSeatRC.c;
+            if (sr === r && sc === c) {
+                selectedSeatRC = null; render(); return;
+            }
+            var t = grid[r][c];
+            grid[r][c] = grid[sr][sc];
+            grid[sr][sc] = t;
+            selectedSeatRC = null;
+            render();
+            return;
+        }
+        // nothing selected: select this seat if it has a student, else select empty? Skip empty.
+        if (grid[r][c] != null) {
+            selectedSeatRC = { r: r, c: c };
+            render();
+        }
+    }
+
+    // ====== RANDOM (showing current seats initially, new seats after click) ======
+    function renderRandom(app) {
+        var html = '';
+        html += '<div class="screen"><div class="panel">';
+        html += '<button class="backbtn" id="backBtn">이전</button>';
+        html += '<div class="title">자리 랜덤 배치</div>';
+
+        html += '<div class="frontLabel">칠판</div>';
+        html += renderSeatBoardHtml('resultBoard', { mode: 'view', useCurrent: !hasResult });
+
+        html += '<div class="configwrap" style="text-align:left;margin-top:14px;">';
+        html += '<label class="checkline"><input id="optPair" type="checkbox"' + (randomOptions.noSamePair ? ' checked' : '') + '>같은 짝 다시 반복 금지</label>';
+        html += '<label class="checkline"><input id="optSeat" type="checkbox"' + (randomOptions.noSameSeat ? ' checked' : '') + '>했던 자리 다시 앉지 않기</label>';
+        html += '</div>';
+        html += '<div class="controls">';
+        html += '<button id="goBtn" class="button">자리 배치</button>';
+        html += '</div>';
+
+        html += '<div class="controls">';
+        html += '<button id="saveBtn" class="button">저장</button>';
+        html += '<input id="loadFileR" class="fileinput" type="file" accept=".txt">';
+        html += '<button id="loadBtn" class="button secondary">불러오기</button>';
+        html += '</div>';
+
+        html += '</div></div>';
+        app.innerHTML = html;
+
+        document.getElementById('backBtn').onclick = function () { state = 'currentSeats'; render(); };
+        document.getElementById('optPair').onchange = function () {
+            randomOptions.noSamePair = document.getElementById('optPair').checked;
+        };
+        document.getElementById('optSeat').onchange = function () {
+            randomOptions.noSameSeat = document.getElementById('optSeat').checked;
+        };
+        document.getElementById('goBtn').onclick = function () {
+            randomOptions.noSamePair = document.getElementById('optPair').checked;
+            randomOptions.noSameSeat = document.getElementById('optSeat').checked;
+            doRandomArrangement();
+        };
+        document.getElementById('saveBtn').onclick = saveToFile;
+        document.getElementById('loadBtn').onclick = function () { openLoadDialog('loadFileR'); };
+    }
+
+    function doRandomArrangement() {
+        // validate forced pair consistency among participants
+        var i, num, c, partner;
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            c = conditions[num];
+            if (c && c.mustPairWith != null) {
+                partner = c.mustPairWith;
+                if (participants.indexOf(partner) < 0) {
+                    alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다');
+                    return;
+                }
+                if (!conditions[partner] || conditions[partner].mustPairWith !== num) {
+                    // auto-repair, but if explicitly mismatched, fail
+                    if (conditions[partner] && conditions[partner].mustPairWith != null && conditions[partner].mustPairWith !== num) {
+                        alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다');
+                        return;
+                    }
+                    ensureCondition(partner).mustPairWith = num;
+                }
+            }
+        }
+        // try several random restarts
+        var attempts = 0, maxAttempts = 12, result = null;
+        while (attempts < maxAttempts && !result) {
+            result = runBacktrackSolver();
+            attempts++;
+        }
+        if (!result) {
+            alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다');
+            return;
+        }
+        newSeats = result;
+        hasResult = true;
+        render();
+    }
+
+    // ====== SOLVER ======
+    function runBacktrackSolver() {
+        // build placement order: pair partners adjacent, randomize otherwise
+        var order = buildPlacementOrder();
+        var seats = emptyGrid(null);
+        var stepsObj = { steps: 0, max: 200000 };
+        var prev = collectPrevPairsAndSeats();
+        var ok = backtrackPlace(order, 0, seats, stepsObj, prev);
+        return ok ? seats : null;
+    }
+
+    function buildPlacementOrder() {
+        var p = participants.slice(0);
+        shuffle(p);
+        var visited = {}, order = [], i, num, c;
+        for (i = 0; i < p.length; i++) {
+            num = p[i];
+            if (visited[num]) continue;
+            order.push(num); visited[num] = true;
+            c = conditions[num];
+            if (c && c.mustPairWith != null && !visited[c.mustPairWith]) {
+                order.push(c.mustPairWith);
+                visited[c.mustPairWith] = true;
+            }
+        }
+        return order;
+    }
+
+    function collectPrevPairsAndSeats() {
+        var prevPairs = []; // list of [a,b] where a<b
+        var prevSeats = {}; // num -> [{r,c}]
+        var r, c, mate, a, b;
+        for (r = 0; r < rows; r++) {
+            for (c = 0; c < cols; c++) {
+                a = currentSeats[r][c];
+                if (a == null) continue;
+                if (!prevSeats[a]) prevSeats[a] = [];
+                prevSeats[a].push({ r: r, c: c });
+                mate = getMate(r, c);
+                if (mate && mate.c > c) {
+                    b = currentSeats[mate.r][mate.c];
+                    if (b != null) {
+                        var lo = a < b ? a : b;
+                        var hi = a < b ? b : a;
+                        prevPairs.push([lo, hi]);
+                    }
+                }
+            }
+        }
+        return { pairs: prevPairs, seats: prevSeats };
+    }
+
+    function backtrackPlace(order, idx, seats, stepsObj, prev) {
+        stepsObj.steps++;
+        if (stepsObj.steps > stepsObj.max) return false;
+        if (idx >= order.length) return true;
+        var num = order[idx];
+        var cands = candidateSeatsFor(num, seats, prev);
+        shuffle(cands);
+        var i;
+        for (i = 0; i < cands.length; i++) {
+            var pos = cands[i];
+            seats[pos.r][pos.c] = num;
+            if (checkPlacementConstraints(num, pos, seats, prev)) {
+                if (backtrackPlace(order, idx + 1, seats, stepsObj, prev)) return true;
+            }
+            seats[pos.r][pos.c] = null;
+            if (stepsObj.steps > stepsObj.max) return false;
+        }
+        return false;
+    }
+
+    function candidateSeatsFor(num, seats, prev) {
+        var c = conditions[num] || {};
+        var locked = c.mustPairWith != null;
+        var cands = [];
+        var partnerPos = null;
+        if (locked) {
+            partnerPos = findStudentInGrid(seats, c.mustPairWith);
+        }
+        if (partnerPos) {
+            // must be adjacent to partnerPos
+            var mate = getMate(partnerPos.r, partnerPos.c);
+            if (!mate) return cands;
+            if (!enabledSeats[mate.r][mate.c]) return cands;
+            if (seats[mate.r][mate.c] != null) return cands;
+            if (!seatPassesPlacementFilters(num, mate, prev, /*ignoreAllowed*/ true)) return cands;
+            cands.push(mate);
+            return cands;
+        }
+        // not yet placed (or not locked): try all empty enabled seats
+        var r, cc;
+        for (r = 0; r < rows; r++) {
+            for (cc = 0; cc < cols; cc++) {
+                if (!enabledSeats[r][cc]) continue;
+                if (seats[r][cc] != null) continue;
+                if (!seatPassesPlacementFilters(num, { r: r, c: cc }, prev, locked)) continue;
+                if (locked) {
+                    // need an adjacent empty enabled seat for partner
+                    var m = getMate(r, cc);
+                    if (!m) continue;
+                    if (!enabledSeats[m.r][m.c]) continue;
+                    if (seats[m.r][m.c] != null) continue;
+                }
+                cands.push({ r: r, c: cc });
+            }
+        }
+        return cands;
+    }
+
+    function seatPassesPlacementFilters(num, pos, prev, ignoreAllowed) {
+        var c = conditions[num] || {};
+        if (!ignoreAllowed && c.allowedSeats && c.allowedSeats.length > 0 && c.mustPairWith == null) {
+            var ok = false, k;
+            for (k = 0; k < c.allowedSeats.length; k++) {
+                if (c.allowedSeats[k].r === pos.r && c.allowedSeats[k].c === pos.c) { ok = true; break; }
+            }
+            if (!ok) return false;
+        }
+        if (randomOptions.noSameSeat && prev.seats[num]) {
+            var i;
+            for (i = 0; i < prev.seats[num].length; i++) {
+                if (prev.seats[num][i].r === pos.r && prev.seats[num][i].c === pos.c) return false;
+            }
+        }
+        return true;
+    }
+
+    function checkPlacementConstraints(num, pos, seats, prev) {
+        // check: if mate is placed, pair-related constraints must hold
+        var mate = getMate(pos.r, pos.c);
+        if (!mate) return true;
+        if (!enabledSeats[mate.r][mate.c]) return true;
+        var partner = seats[mate.r][mate.c];
+        if (partner == null) return true;
+        var c1 = conditions[num] || {};
+        var c2 = conditions[partner] || {};
+        // mustPairWith consistency
+        if (c1.mustPairWith != null && c1.mustPairWith !== partner) return false;
+        if (c2.mustPairWith != null && c2.mustPairWith !== num) return false;
+        // gender constraints (skip if locked by mustPair)
+        if (c1.mustPairWith == null && c1.pairGender) {
+            var pg = students[partner] ? students[partner].gender : 'M';
+            if (pg !== c1.pairGender) return false;
+        }
+        if (c2.mustPairWith == null && c2.pairGender) {
+            var ng = students[num] ? students[num].gender : 'M';
+            if (ng !== c2.pairGender) return false;
+        }
+        // no same pair
+        if (randomOptions.noSamePair) {
+            var lo = num < partner ? num : partner;
+            var hi = num < partner ? partner : num;
+            var i;
+            for (i = 0; i < prev.pairs.length; i++) {
+                if (prev.pairs[i][0] === lo && prev.pairs[i][1] === hi) return false;
+            }
+        }
+        return true;
+    }
+
+    function findStudentInGrid(grid, num) {
+        var r, c;
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+            if (grid[r][c] === num) return { r: r, c: c };
+        }
+        return null;
+    }
+
+    // ====== SEAT BOARD HTML ======
+    function renderSeatBoardHtml(id, opts) {
+        // opts.mode: 'enable' | 'allowed' | 'currentSeats' | 'view'
+        // for 'allowed', opts.num is the student
+        var html = '<div class="seatBoard" id="' + id + '">';
+        var r, c, cellHtml, cellClass, cellLabel, mini = !!opts.mini;
+        for (r = 0; r < rows; r++) {
+            html += '<div class="seatRow">';
+            for (c = 0; c < cols; c++) {
+                var enabled = enabledSeats[r][c];
+                cellClass = 'seatCell';
+                if (mini) cellClass += ' miniCell';
+                cellLabel = '';
+                if (opts.mode === 'enable') {
+                    if (enabled) cellClass += ' empty'; else cellClass += ' disabled';
+                    cellLabel = enabled ? '' : '×';
+                } else if (opts.mode === 'allowed') {
+                    if (!enabled) {
+                        cellClass += ' disabled';
+                        cellLabel = '';
+                    } else {
+                        var allowedList = (conditions[opts.num] && conditions[opts.num].allowedSeats) || [];
+                        var isAllowed = false, k;
+                        for (k = 0; k < allowedList.length; k++) {
+                            if (allowedList[k].r === r && allowedList[k].c === c) { isAllowed = true; break; }
+                        }
+                        if (allowedList.length === 0) cellClass += ' empty';
+                        else if (isAllowed) cellClass += ' allowed';
+                        else cellClass += ' empty';
+                        cellLabel = '';
+                    }
+                } else if (opts.mode === 'currentSeats') {
+                    if (!enabled) {
+                        cellClass += ' disabled';
+                    } else {
+                        var sn = currentSeats[r][c];
+                        if (sn == null) {
+                            cellClass += ' empty';
+                            cellLabel = '';
+                        } else {
+                            cellClass += ' filled' + genderTag((students[sn] || {}).gender || 'M');
+                            cellLabel = escapeHtml(getStudentShort(sn));
+                            if (selectedSeatRC && selectedSeatRC.r === r && selectedSeatRC.c === c) cellClass += ' selected';
+                        }
+                    }
+                } else if (opts.mode === 'view') {
+                    if (!enabled) {
+                        cellClass += ' disabled';
+                    } else {
+                        var vn = (opts.useCurrent ? currentSeats[r][c] : newSeats[r][c]);
+                        if (vn == null) {
+                            cellClass += ' empty';
+                            cellLabel = '';
+                        } else {
+                            cellClass += ' filled' + genderTag((students[vn] || {}).gender || 'M');
+                            var sObj = students[vn] || {};
+                            var nm = sObj.name || '';
+                            if (nm === '') {
+                                cellLabel = '<span class="cellName">' + vn + '번</span>';
+                            } else {
+                                cellLabel = '<span class="cellNum">' + vn + '</span><span class="cellName">' + escapeHtml(nm) + '</span>';
+                            }
+                        }
+                    }
+                }
+                cellHtml = '<button class="' + cellClass + '" data-r="' + r + '" data-c="' + c + '">' + cellLabel + '</button>';
+                html += cellHtml;
+                // visual gap after odd col (between desk pairs)
+                if (c % 2 === 1 && c < cols - 1) html += '<span class="deskGap"></span>';
+            }
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function attachSeatBoardClicks(boardId, handler) {
+        var board = document.getElementById(boardId);
+        if (!board) return;
+        var cells = board.getElementsByClassName('seatCell'), i;
+        for (i = 0; i < cells.length; i++) {
+            (function (cell) {
+                var r = parseInt(cell.getAttribute('data-r'), 10);
+                var c = parseInt(cell.getAttribute('data-c'), 10);
+                cell.onclick = function () { handler(r, c); };
+            })(cells[i]);
+        }
+    }
+
+    // ====== SAVE / LOAD ======
+    function openLoadDialog(inputId) {
+        var fi = document.getElementById(inputId);
+        if (!fi) { alert('불러오기 입력창을 찾지 못했습니다.'); return; }
+        fi.value = '';
+        fi.onchange = function () {
+            if (fi.value && fi.files && fi.files[0]) loadFromSelectedFile(inputId);
+        };
+        if (fi.click) fi.click();
+        else alert('이 브라우저에서는 버튼으로 파일 선택 창을 열 수 없습니다.');
+    }
+
+    function saveToFile() {
+        var lines = [], i, r, c, num, s, content, blob, url, a, k, p;
+        for (i = 0; i < 100; i++) lines.push('.');
+        lines.push('META;ROWS;' + rows);
+        lines.push('META;COLS;' + cols);
+        lines.push('META;COUNT;' + studentCount);
+        lines.push('META;ABSENT;"' + getAbsentText() + '"');
+        // disabled seats
+        var disabledList = [];
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) if (!enabledSeats[r][c]) disabledList.push(r + ',' + c);
+        lines.push('META;DISABLED;"' + disabledList.join(';') + '"');
+        // students
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            s = students[num] || { name: '', gender: 'M' };
+            lines.push('S;' + num + ';"' + escapeTextName(s.name || '') + '";' + (s.gender || 'M'));
+        }
+        // placements (newSeats)
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+            if (newSeats[r] && newSeats[r][c] != null) lines.push('P;' + r + ';' + c + ';' + newSeats[r][c]);
+        }
+        // conditions
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            var cd = conditions[num];
+            if (!cd) continue;
+            if (cd.mustPairWith != null) lines.push('CF;' + num + ';' + cd.mustPairWith);
+            if (cd.pairGender) lines.push('CG;' + num + ';' + cd.pairGender);
+            if (cd.allowedSeats && cd.allowedSeats.length > 0) {
+                var arr = [];
+                for (k = 0; k < cd.allowedSeats.length; k++) {
+                    p = cd.allowedSeats[k];
+                    arr.push(p.r + ',' + p.c);
+                }
+                lines.push('CS;' + num + ';"' + arr.join(';') + '"');
+            }
+        }
+        content = lines.join('\r\n');
+        if (window.Blob) {
+            blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            if (window.navigator && window.navigator.msSaveBlob) {
+                window.navigator.msSaveBlob(blob, 'seat_save.txt'); return;
+            }
+            if (window.URL && window.URL.createObjectURL) {
+                url = window.URL.createObjectURL(blob);
+                a = document.createElement('a');
+                a.href = url; a.download = 'seat_save.txt';
+                document.body.appendChild(a);
+                if (a.click) a.click(); else window.location.href = url;
+                setTimeout(function () {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+                return;
+            }
+        }
+        alert('이 브라우저에서는 저장 기능을 지원하지 않습니다.');
+    }
+
+    function loadFromSelectedFile(inputId) {
+        var fi = document.getElementById(inputId), file, reader;
+        if (!fi || !fi.value || !fi.files || !fi.files[0]) {
+            alert('불러올 txt 파일을 먼저 선택해 주세요.'); return;
+        }
+        file = fi.files[0];
+        if (!window.FileReader) { alert('이 브라우저에서는 불러오기 기능을 지원하지 않습니다.'); return; }
+        reader = new FileReader();
+        reader.onload = function (e) {
+            var text = e && e.target ? e.target.result : reader.result;
+            if (parseLoadedText(text)) {
+                state = 'random';
+                hasResult = true;
+                render();
+            }
+        };
+        reader.onerror = function () { alert('파일을 읽지 못했습니다.'); };
+        reader.readAsText(file, 'utf-8');
+    }
+
+    function parseLoadedText(text) {
+        var normalized = String(text).replace(/\r/g, '');
+        var lines = normalized.split('\n');
+        var metaRows = null, metaCols = null, metaCount = null, metaAbsent = null, metaDisabled = null;
+        var loadedStudents = {}, placements = [], condF = {}, condG = {}, condS = {};
+        var i, line, m, num, parsedAbs, parts, k, rr, cc;
+
+        for (i = 0; i < lines.length; i++) {
+            line = trim(lines[i]);
+            if (line === '' || line === '.') continue;
+            m = line.match(/^META\s*;\s*ROWS\s*;\s*(\d+)\s*$/i); if (m) { metaRows = parseInt(m[1], 10); continue; }
+            m = line.match(/^META\s*;\s*COLS\s*;\s*(\d+)\s*$/i); if (m) { metaCols = parseInt(m[1], 10); continue; }
+            m = line.match(/^META\s*;\s*COUNT\s*;\s*(\d+)\s*$/i); if (m) { metaCount = parseInt(m[1], 10); continue; }
+            m = line.match(/^META\s*;\s*ABSENT\s*;\s*"([^"]*)"\s*$/i); if (m) { metaAbsent = m[1]; continue; }
+            m = line.match(/^META\s*;\s*DISABLED\s*;\s*"([^"]*)"\s*$/i); if (m) { metaDisabled = m[1]; continue; }
+            m = line.match(/^S\s*;\s*(\d+)\s*;\s*"((?:[^"]|"")*)"\s*;\s*([MFN])\s*$/i);
+            if (m) {
+                num = parseInt(m[1], 10);
+                loadedStudents[num] = { name: m[2].replace(/""/g, '"'), gender: m[3].toUpperCase() };
+                continue;
+            }
+            m = line.match(/^P\s*;\s*(\d+)\s*;\s*(\d+)\s*;\s*(\d+)\s*$/i);
+            if (m) {
+                placements.push({ r: parseInt(m[1], 10), c: parseInt(m[2], 10), num: parseInt(m[3], 10) });
+                continue;
+            }
+            m = line.match(/^CF\s*;\s*(\d+)\s*;\s*(\d+)\s*$/i);
+            if (m) { condF[parseInt(m[1], 10)] = parseInt(m[2], 10); continue; }
+            m = line.match(/^CG\s*;\s*(\d+)\s*;\s*([MF])\s*$/i);
+            if (m) { condG[parseInt(m[1], 10)] = m[2].toUpperCase(); continue; }
+            m = line.match(/^CS\s*;\s*(\d+)\s*;\s*"([^"]*)"\s*$/i);
+            if (m) {
+                var arr = [], items = m[2].split(';');
+                for (k = 0; k < items.length; k++) {
+                    if (items[k] === '') continue;
+                    var pp = items[k].split(',');
+                    if (pp.length === 2) arr.push({ r: parseInt(pp[0], 10), c: parseInt(pp[1], 10) });
+                }
+                condS[parseInt(m[1], 10)] = arr;
+                continue;
+            }
+        }
+        if (metaRows == null || metaCols == null || metaCount == null) {
+            alert('저장 파일에서 기본 정보를 확인할 수 없습니다.'); return false;
+        }
+        if (metaRows < 1 || metaCols < 1 || metaCount < 1) {
+            alert('저장 파일의 값이 올바르지 않습니다.'); return false;
+        }
+        parsedAbs = parseAbsentList(metaAbsent || '', metaCount);
+        if (parsedAbs === null) { alert('저장 파일의 결번 정보가 올바르지 않습니다.'); return false; }
+
+        rows = metaRows; cols = metaCols; studentCount = metaCount; absentNumbers = parsedAbs;
+        buildParticipants();
+        if (participants.length < 1) { alert('저장 파일의 참여 인원이 부족합니다.'); return false; }
+
+        // disabled seats
+        enabledSeats = emptyGrid(true);
+        if (metaDisabled) {
+            parts = metaDisabled.split(';');
+            for (k = 0; k < parts.length; k++) {
+                if (parts[k] === '') continue;
+                var dpp = parts[k].split(',');
+                if (dpp.length === 2) {
+                    rr = parseInt(dpp[0], 10); cc = parseInt(dpp[1], 10);
+                    if (rr >= 0 && rr < rows && cc >= 0 && cc < cols) enabledSeats[rr][cc] = false;
+                }
+            }
+        }
+
+        students = {};
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            var ls = loadedStudents[num];
+            if (ls) {
+                students[num] = { name: ls.name || '', gender: ls.gender === 'F' ? 'F' : 'M' };
+            } else {
+                students[num] = { name: '', gender: 'M' };
+            }
+        }
+
+        currentSeats = emptyGrid(null);
+        newSeats = emptyGrid(null);
+        for (i = 0; i < placements.length; i++) {
+            var p = placements[i];
+            if (p.r < 0 || p.r >= rows || p.c < 0 || p.c >= cols) continue;
+            if (!enabledSeats[p.r][p.c]) continue;
+            if (participants.indexOf(p.num) < 0) continue;
+            newSeats[p.r][p.c] = p.num;
+        }
+
+        conditions = {};
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            conditions[num] = {
+                mustPairWith: condF[num] != null ? condF[num] : null,
+                pairGender: condG[num] || '',
+                allowedSeats: condS[num] || []
+            };
+        }
+        // sanitize
+        sanitizeConditionsAgainstGrid();
+        return true;
+    }
+
+    // ====== INIT ======
+    function setDefaults() {
+        rows = 5; cols = 6;
+        studentCount = 30;
+        absentNumbers = [];
+        students = {};
+        conditions = {};
+        buildParticipants();
+        resetSeatsToSize();
+        setupIndex = 0;
+        hasResult = false;
+    }
+
+    setDefaults();
+    render();
+})();
+</script>
+</body>
+</html>
