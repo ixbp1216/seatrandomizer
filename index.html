@@ -1,461 +1,663 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>자리 바꾸기</title>
-<style type="text/css">
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: #20242a;
-    color: #ffffff;
-    font-family: Arial, Helvetica, sans-serif;
-}
+<style>
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
 body {
-    overflow: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color: #e9edf3;
+    background-color: #14171c;
+    background-image:
+        radial-gradient(1000px 720px at 8% -12%, rgba(96,126,178,0.20), transparent 62%),
+        radial-gradient(880px 640px at 104% 112%, rgba(72,94,138,0.18), transparent 62%),
+        linear-gradient(158deg, #171a20 0%, #1c2027 48%, #13161b 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
-#app {
+
+/* ============ SHELL + SIDEBAR ============ */
+.shell { display: flex; min-height: 100vh; align-items: stretch; }
+.sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    flex: 0 0 220px;
+    width: 220px;
+    height: 100vh;
+    padding: 26px 16px 20px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.035);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+.navBrand {
+    padding: 0 11px 22px;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: #eef2f8;
+}
+.navGroup { margin-bottom: 2px; }
+.navTop {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
-    min-height: 100%;
-    display: table;
+    padding: 11px 12px;
+    border-radius: 13px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #a6b1c0;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: background .18s, color .18s, border-color .18s;
 }
-.screen {
-    display: table-cell;
-    vertical-align: middle;
-    text-align: center;
-    padding: 24px;
-    box-sizing: border-box;
+.navTop:hover { background: rgba(255,255,255,0.06); color: #e7ecf3; }
+.navTop.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, rgba(92,142,250,0.32), rgba(92,142,250,0.11));
+    border-color: rgba(132,176,255,0.34);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.16);
+}
+.navIco { flex: 0 0 20px; width: 20px; height: 20px; display: block; }
+.navSubs {
+    margin: 4px 0 12px 21px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.11);
+}
+.navSub {
+    display: block;
+    width: 100%;
+    margin: 2px 0;
+    padding: 8px 11px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #8d98a8;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background .16s, color .16s;
+}
+.navSub:hover { color: #dbe3ee; background: rgba(255,255,255,0.05); }
+.navSub.active { color: #93baff; background: rgba(110,160,255,0.14); }
+
+/* ============ MAIN ============ */
+.main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 34px 26px;
 }
 .panel {
     position: relative;
     width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    background: #2b3138;
-    border-radius: 18px;
-    padding: 30px 24px;
-    box-sizing: border-box;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    max-width: 940px;
+    padding: 30px 34px 32px;
+    border-radius: 26px;
+    background: rgba(255,255,255,0.048);
+    -webkit-backdrop-filter: blur(26px) saturate(155%);
+    backdrop-filter: blur(26px) saturate(155%);
+    border: 1px solid rgba(255,255,255,0.095);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.13);
 }
+.panel.narrow { max-width: 620px; }
 .title {
-    font-size: 32px;
-    font-weight: bold;
-    line-height: 1.35;
-    margin-bottom: 18px;
+    font-size: 29px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.6px;
+    margin: 0 0 22px 0;
+    background: linear-gradient(180deg, #ffffff 0%, #b6c1d1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-.subtitle {
-    font-size: 18px;
-    line-height: 1.6;
-    color: #d9e2ef;
-    margin-bottom: 18px;
-}
-.bigtext {
-    font-size: 30px;
-    line-height: 1.6;
-    margin-bottom: 12px;
-}
-.small {
-    font-size: 15px;
-    line-height: 1.6;
-    color: #b9c4d2;
-}
-.hint {
-    margin-top: 20px;
-    font-size: 16px;
-    color: #aeb8c5;
-}
-.dim {
-    color: #8f9aaa;
+.hintline { text-align: center; font-size: 13px; color: #8b96a6; margin: -12px 0 18px; }
+
+/* ============ FORM ============ */
+.split { display: flex; gap: 26px; align-items: flex-start; }
+.splitL { flex: 1 1 auto; min-width: 0; }
+.splitR { flex: 0 0 auto; text-align: center; padding-top: 22px; }
+.field { margin-bottom: 15px; }
+.fieldLabel {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #97a3b4;
+    letter-spacing: .2px;
+    margin-bottom: 7px;
 }
 .inputbox {
     width: 100%;
-    max-width: 420px;
-    height: 50px;
-    padding: 0 14px;
-    font-size: 20px;
-    border: 1px solid #455063;
-    border-radius: 12px;
-    box-sizing: border-box;
-    background: #1d2127;
-    color: #ffffff;
-    outline: none;
-}
-.configbox {
-    display: block;
-    width: 100%;
-    max-width: none;
-    height: 46px;
-    padding: 0 14px;
-    font-size: 18px;
-    border: 1px solid #455063;
-    border-radius: 12px;
-    box-sizing: border-box;
-    background: #1d2127;
-    color: #ffffff;
-    outline: none;
-}
-.configwrap {
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    text-align: left;
-}
-.configrow {
-    margin-bottom: 14px;
-}
-.configlabel {
-    display: block;
-    font-size: 16px;
-    color: #d9e2ef;
-    margin-bottom: 7px;
-}
-.checkline {
-    margin-top: 4px;
-    font-size: 18px;
-    color: #ffffff;
-    display: block;
-    text-align: left;
-}
-.checkline input {
-    vertical-align: middle;
-    margin-right: 8px;
-}
-.controls {
-    margin-top: 18px;
-}
-.button {
-    display: inline-block;
-    margin: 8px 6px 0 6px;
-    padding: 13px 22px;
-    border: 0;
-    border-radius: 12px;
-    background: #2b6ee7;
-    color: #ffffff;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: rgba(9,12,17,0.55);
+    border: 1px solid rgba(255,255,255,0.085);
+    color: #f0f3f8;
     font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s, background .18s;
 }
-.button:hover,
-.numbtn:hover {
-    background: #245fc8;
+.inputbox:focus {
+    border-color: rgba(120,165,255,0.55);
+    background: rgba(9,12,17,0.78);
+    box-shadow: 0 0 0 3px rgba(90,140,255,0.15);
 }
-.backbtn {
-    position: absolute;
-    right: 18px;
-    top: 18px;
-    margin: 0;
-    padding: 10px 14px;
-    border: 0;
-    border-radius: 10px;
-    background: #4c5a72;
-    color: #ffffff;
+.inputbox:disabled { opacity: .4; }
+.inputbox::placeholder { color: #5d6674; font-weight: 500; }
+.selectbox {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 13px;
+    background: rgba(9,12,17,0.6);
+    border: 1px solid rgba(255,255,255,0.085);
+    color: #eef2f7;
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 600;
+    font-family: inherit;
+    outline: none;
+}
+
+/* ============ BUTTONS ============ */
+.btn {
+    padding: 12px 22px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.075);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: #e9edf3;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
+    transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
 }
-.backbtn:hover {
-    background: #3f4c61;
+.btn:hover { background: rgba(255,255,255,0.135); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: .35; cursor: default; transform: none; }
+.btn:disabled:hover { background: rgba(255,255,255,0.075); transform: none; }
+.btn.primary {
+    background: linear-gradient(145deg, #4183fb, #2b62d8);
+    border-color: rgba(255,255,255,0.20);
+    box-shadow: 0 8px 22px rgba(45,100,220,0.34), inset 0 1px 0 rgba(255,255,255,0.30);
 }
-.button:disabled {
-    background: #2f3742;
-    color: #6b7585;
-    cursor: default;
+.btn.primary:hover { background: linear-gradient(145deg, #4f8cfc, #3169e0); }
+.btn.green {
+    background: linear-gradient(145deg, #2fb571, #1e8f55);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 8px 20px rgba(30,140,85,0.30), inset 0 1px 0 rgba(255,255,255,0.26);
 }
-.button:disabled:hover,
-.numbtn.disabled:hover {
-    background: #2f3742;
+.btn.red {
+    background: linear-gradient(145deg, #e34e4e, #bd3636);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 8px 20px rgba(190,55,55,0.30), inset 0 1px 0 rgba(255,255,255,0.24);
 }
-.button.secondary {
-    background: #4c5a72;
+.btn.amber {
+    background: linear-gradient(145deg, #f2c94a, #dca81c);
+    border-color: rgba(255,255,255,0.28);
+    color: #2b2510;
+    box-shadow: 0 8px 20px rgba(210,160,20,0.28), inset 0 1px 0 rgba(255,255,255,0.55);
 }
-.button.secondary:hover {
-    background: #3f4c61;
+.btn.orange {
+    background: linear-gradient(145deg, #f28c2e, #d47015);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 8px 20px rgba(210,110,20,0.28), inset 0 1px 0 rgba(255,255,255,0.26);
 }
-.button.danger {
-    background: #c93a3a;
-}
-.button.danger:hover {
-    background: #b23232;
-}
-.fileinput {
-    position: absolute;
-    left: -9999px;
-    top: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-}
-.grid {
-    margin: 18px auto 0 auto;
+.btn.tiny { padding: 6px 15px; font-size: 13px; border-radius: 10px; }
+.btn.sm { padding: 9px 17px; font-size: 14px; border-radius: 12px; }
+.controls { text-align: center; margin-top: 20px; }
+.controls .btn { margin: 5px 5px; }
+.rowBetween { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* ============ SEAT BOARD ============ */
+.boardWrap { text-align: center; }
+.flipRow { display: block; text-align: center; margin-bottom: 8px; }
+.chalkRow { display: block; text-align: center; margin-bottom: 10px; }
+.chalkRow.bottom { margin-bottom: 0; margin-top: 10px; }
+.boardRow {
+    display: block;
     text-align: center;
-    max-width: 720px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
-.numbtn {
+.boardRow::-webkit-scrollbar { display: none; }
+.chalk {
     display: inline-block;
-    width: 92px;
-    height: 48px;
-    margin: 7px;
-    padding: 0 8px;
-    border: 0;
-    border-radius: 12px;
-    background: #2b6ee7;
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 48px;
-    vertical-align: top;
-    cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
-}
-.numbtn.disabled {
-    background: #444c58;
-    color: #9aa3b1;
-    cursor: default;
-}
-.numbtn.cond {
-    background: #c97a2b;
-}
-.numbtn.cond:hover {
-    background: #b86a20;
-}
-.toolbar {
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid #3b4350;
-    text-align: center;
+    padding: 6px 32px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 7px;
+    text-indent: 7px;
+    color: #909baa;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.075);
 }
 .seatBoard {
+    position: relative;
     display: inline-block;
-    margin: 16px auto 8px auto;
-    padding: 12px;
-    background: #1a1d22;
-    border-radius: 14px;
-    border: 1px solid #3b4350;
+    padding: 14px;
+    border-radius: 20px;
+    background: rgba(7,9,13,0.46);
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow: inset 0 2px 22px rgba(0,0,0,0.45);
+    overflow: hidden;
 }
-.seatRow {
-    white-space: nowrap;
-    margin-bottom: 6px;
-}
-.seatRow:last-child {
-    margin-bottom: 0;
-}
+.seatRow { white-space: nowrap; margin-bottom: 7px; }
+.seatRow:last-child { margin-bottom: 0; }
 .seatCell {
     display: inline-flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    width: 76px;
+    justify-content: center;
+    width: 78px;
     height: 60px;
-    margin: 0 1px;
+    margin: 0 2px;
+    padding: 0 4px;
     vertical-align: middle;
-    background: #1d2127;
-    border: 1px solid #455063;
-    border-radius: 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
     color: #ffffff;
+    font-family: inherit;
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 700;
     line-height: 1.15;
-    text-align: center;
     cursor: pointer;
-    box-sizing: border-box;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
-    -moz-user-select: none;
-    padding: 0 4px;
+    transition: transform .14s ease, box-shadow .16s ease, background .16s ease;
 }
+.seatCell:hover { transform: translateY(-2px); }
+.seatCell.static, .seatCell.static:hover { cursor: default; transform: none; }
+.seatCell.filledM {
+    background: linear-gradient(150deg, #4183fb, #2a5fc4);
+    border-color: rgba(255,255,255,0.20);
+    box-shadow: 0 6px 16px rgba(40,90,200,0.32), inset 0 1px 0 rgba(255,255,255,0.26);
+}
+.seatCell.filledF {
+    background: linear-gradient(150deg, #e35d95, #bf3d73);
+    border-color: rgba(255,255,255,0.20);
+    box-shadow: 0 6px 16px rgba(180,55,105,0.32), inset 0 1px 0 rgba(255,255,255,0.26);
+}
+.seatCell.disabled {
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.12);
+    cursor: default;
+}
+.seatCell.disabled:hover { transform: none; }
+.seatCell.allowed {
+    background: linear-gradient(150deg, #4183fb, #2a5fc4);
+    border-color: rgba(245,205,80,0.9);
+    box-shadow: 0 0 0 2px rgba(245,205,80,0.75), 0 6px 16px rgba(40,90,200,0.3);
+}
+.seatCell.selected {
+    box-shadow: 0 0 0 3px #f5cd50, 0 10px 26px rgba(0,0,0,0.45);
+    transform: translateY(-2px);
+}
+.seatCell.dropTarget { box-shadow: 0 0 0 2px rgba(120,180,255,0.8); }
 .cellNum {
     font-size: 11px;
-    font-weight: normal;
-    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    color: rgba(255,255,255,0.82);
     line-height: 1.1;
     margin-bottom: 2px;
 }
 .cellName {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
     line-height: 1.15;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.seatCell.disabled {
-    background: #15171b;
-    border-style: dashed;
-    color: #4a525e;
-    cursor: pointer;
-}
-.seatCell.empty {
-    background: #1d2127;
-    color: #6f7b8a;
-}
-.seatCell.filled {
-    background: #2b6ee7;
-    color: #ffffff;
-}
-.seatCell.filledM {
-    background: #2b6ee7;
-}
-.seatCell.filledF {
-    background: #d04a78;
-}
-.seatCell.selected {
-    outline: 3px solid #ffd166;
-    outline-offset: -3px;
-}
-.seatCell.allowed {
-    background: #1f4a8a;
-    border-color: #ffd166;
-}
-.seatCell.dragover {
-    outline: 3px dashed #ffd166;
-    outline-offset: -3px;
-}
-.deskGap {
-    display: inline-block;
-    width: 14px;
-    height: 1px;
-    vertical-align: middle;
-}
-.frontLabel {
-    font-size: 13px;
-    color: #8f9aaa;
-    margin-bottom: 8px;
-    text-align: center;
-    letter-spacing: 4px;
-}
+.deskGap { display: inline-block; width: 16px; vertical-align: middle; }
+.miniCell { width: 40px; height: 32px; margin: 0 1px; border-radius: 8px; font-size: 12px; }
+.miniCell .cellNum { font-size: 9px; }
+.miniCell .cellName { font-size: 11px; }
+.seatBoard.mini { padding: 9px; border-radius: 15px; }
+.seatBoard.mini .seatRow { margin-bottom: 4px; }
+.previewCap { font-size: 13px; color: #8d99a9; margin-top: 9px; font-weight: 600; }
 
-/* student bank for drag-drop */
-.studentBank {
-    margin: 14px auto 6px auto;
-    max-width: 720px;
-    padding: 10px;
-    background: #1a1d22;
-    border-radius: 12px;
-    border: 1px solid #3b4350;
+/* ============ BANK ============ */
+.bank {
+    margin: 14px 0 4px;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(7,9,13,0.4);
+    border: 1px solid rgba(255,255,255,0.06);
     text-align: center;
-    min-height: 50px;
+    min-height: 54px;
 }
 .bankSlot {
     display: inline-block;
-    width: 84px;
-    height: 36px;
     margin: 4px;
-    padding: 0 6px;
-    background: #2b6ee7;
-    border: 0;
-    border-radius: 8px;
-    color: #ffffff;
+    padding: 8px 15px;
+    border-radius: 11px;
+    background: linear-gradient(145deg, #4183fb, #2a5fc4);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
     font-size: 14px;
-    font-weight: bold;
-    line-height: 36px;
+    font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    box-sizing: border-box;
-    vertical-align: middle;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
-.bankSlot.M { background: #2b6ee7; }
-.bankSlot.F { background: #d04a78; }
-.bankSlot.N { background: #5e6b80; }
-.bankSlot.selected {
-    outline: 3px solid #ffd166;
-    outline-offset: -3px;
+.bankSlot.femaleSlot { background: linear-gradient(145deg, #e35d95, #bf3d73); }
+.bankSlot:hover { transform: translateY(-2px); }
+.bankSlot.selected { box-shadow: 0 0 0 3px #f5cd50; }
+.bankEmpty { color: #7a8494; font-size: 14px; padding: 12px 0; }
+
+/* ============ TABLE ============ */
+.tableWrap {
+    max-height: 470px;
+    overflow-y: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(7,9,13,0.32);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
-.bankEmpty {
-    color: #8f9aaa;
+.tableWrap::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.stable { width: 100%; border-collapse: collapse; }
+.stable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    font-size: 13px;
+    font-weight: 600;
+    color: #96a2b3;
+    padding: 11px 6px;
+    background: rgba(26,30,37,0.97);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.stable td {
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.045);
+}
+.stable tbody tr:nth-child(odd) { background: rgba(255,255,255,0.022); }
+.stable tbody tr.absentRow td { color: #5f6a79; font-weight: 500; }
+.colChk { width: 44px; }
+.colNum { width: 70px; }
+.colGen { width: 70px; }
+.colCond { width: 110px; }
+.gTagM { color: #7fb0ff; }
+.gTagF { color: #f193ba; }
+input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #4183fb; }
+input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: #4183fb; }
+.checkline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-size: 14px;
-    line-height: 36px;
+    font-weight: 600;
+    color: #c2cbd8;
+    cursor: pointer;
+    margin: 6px 14px 6px 0;
 }
 
-/* condition editor */
-.condSection {
-    margin: 14px auto;
-    padding: 14px;
-    max-width: 600px;
-    background: #1a1d22;
+/* ============ NUMBER GRID (조건 목록) ============ */
+.numGrid { text-align: center; }
+.numbtn {
+    display: inline-block;
+    width: 60px;
+    margin: 4px;
+    padding: 11px 0;
     border-radius: 12px;
-    border: 1px solid #3b4350;
-    text-align: left;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.06);
+    color: #dde4ee;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s, background .15s;
 }
+.numbtn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
+.numbtn.set {
+    background: linear-gradient(145deg, #f28c2e, #d47015);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 6px 16px rgba(210,110,20,0.28), inset 0 1px 0 rgba(255,255,255,0.26);
+}
+
+/* ============ CONDITION SECTIONS ============ */
+.condSection {
+    margin-bottom: 15px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
+}
+.condSection.disabled { opacity: .42; pointer-events: none; }
 .condSectionTitle {
-    font-size: 17px;
-    font-weight: bold;
-    color: #ffd166;
-    margin-bottom: 10px;
-}
-.condSection.disabled {
-    opacity: 0.45;
+    font-size: 13px;
+    font-weight: 700;
+    color: #f0c14b;
+    letter-spacing: .3px;
+    margin-bottom: 11px;
 }
 .radioLine {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     margin-right: 18px;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
 }
-.radioLine input {
-    vertical-align: middle;
-    margin-right: 6px;
+.backbtn {
+    position: absolute;
+    top: 26px;
+    right: 30px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.11);
+    color: #dbe2eb;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .16s;
 }
+.backbtn:hover { background: rgba(255,255,255,0.15); }
+.fileinput { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.stepDot { text-align: center; font-size: 13px; color: #8b96a6; font-weight: 600; margin-bottom: 14px; }
 
-.miniCell {
-    width: 56px;
-    height: 42px;
+/* ============ REVEAL (SHIFT) ============ */
+.seatCell.spinning {
+    background: linear-gradient(150deg, #5c6675, #3e4653);
+    border-color: rgba(255,255,255,0.14);
+    animation: spinPulse .34s ease-in-out infinite alternate;
+}
+.seatCell.spinning .cellName { filter: blur(1.1px); opacity: .78; }
+@keyframes spinPulse {
+    from { transform: translateY(0) scale(1); }
+    to   { transform: translateY(-3px) scale(1.03); }
+}
+.seatCell.locked { animation: lockPop .46s cubic-bezier(.16,1.2,.3,1) both; }
+@keyframes lockPop {
+    0%   { transform: scale(.55) rotateX(70deg); opacity: 0; }
+    45%  { transform: scale(1.22) rotateX(0deg); opacity: 1; box-shadow: 0 0 0 5px rgba(245,205,80,.55), 0 0 34px 6px rgba(245,205,80,.5); }
+    75%  { transform: scale(.96); box-shadow: 0 0 0 2px rgba(245,205,80,.25), 0 0 18px 2px rgba(245,205,80,.22); }
+    100% { transform: scale(1); }
+}
+.sweep {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 46%;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.13) 38%, rgba(180,215,255,.32) 52%, rgba(255,255,255,.13) 66%, transparent);
+    animation: sweepRun 1.05s cubic-bezier(.4,0,.25,1) forwards;
+}
+@keyframes sweepRun { from { left: -50%; } to { left: 108%; } }
+.flash {
+    position: fixed;
+    left: 0; top: 0; right: 0; bottom: 0;
+    z-index: 85;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(200,225,255,.30), transparent 68%);
+    animation: flashOut .55s ease-out forwards;
+}
+@keyframes flashOut { from { opacity: 1; } to { opacity: 0; } }
+.seatCell.burst { animation: burstFx .6s cubic-bezier(.2,1,.3,1) both; }
+@keyframes burstFx {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.3) rotate(-4deg); box-shadow: 0 0 0 8px rgba(245,205,80,.42), 0 0 44px 10px rgba(245,205,80,.55); }
+    60%  { transform: scale(.94) rotate(3deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+.spark { position: fixed; z-index: 96; width: 9px; height: 9px; border-radius: 50%; pointer-events: none; }
+
+/* ============ INLINE EDIT TABLE ============ */
+.cellInput {
+    width: 100%;
+    max-width: 210px;
+    padding: 6px 11px;
+    border-radius: 9px;
+    background: rgba(9,12,17,0.55);
+    border: 1px solid rgba(255,255,255,0.09);
+    color: #eef2f7;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    transition: border-color .16s, box-shadow .16s;
+}
+.cellInput:focus { border-color: rgba(120,165,255,0.6); box-shadow: 0 0 0 2px rgba(90,140,255,0.17); }
+.cellInput:disabled { opacity: .3; }
+.genBtn {
+    padding: 5px 14px;
+    border-radius: 9px;
+    border: 1px solid rgba(127,176,255,0.32);
+    background: rgba(65,131,251,0.18);
+    color: #7fb0ff;
+    font-family: inherit;
     font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
 }
+.genBtn:hover { background: rgba(65,131,251,0.3); }
+.genBtn.f {
+    border-color: rgba(241,147,186,0.32);
+    background: rgba(227,93,149,0.18);
+    color: #f193ba;
+}
+.genBtn.f:hover { background: rgba(227,93,149,0.3); }
+.genBtn:disabled { opacity: .3; cursor: default; }
 
-@media screen and (max-width: 800px) {
-    .panel {
-        padding: 24px 14px;
+/* ============ MOBILE ============ */
+@media (max-width: 860px) {
+    .shell { flex-direction: column; }
+    .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 60;
+        flex: none;
+        width: 100%;
+        height: auto;
+        padding: 10px 12px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 7px;
     }
-    .title {
-        font-size: 24px;
+    .navBrand { display: none; }
+    .navGroup { display: contents; }
+    .navTop {
+        grid-row: 1;
+        justify-content: center;
+        gap: 7px;
+        padding: 9px 6px;
+        font-size: 13.5px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(255,255,255,0.08);
     }
-    .seatCell {
-        width: 54px;
-        height: 48px;
-        font-size: 13px;
-        margin: 0 1px;
-        padding: 0 2px;
+    .navIco { flex: 0 0 17px; width: 17px; height: 17px; }
+    .navSubs {
+        grid-row: 2;
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 6px;
+        margin: 2px 0 0;
+        padding: 8px 0 0;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
     }
-    .deskGap {
-        width: 8px;
-    }
-    .miniCell {
-        width: 44px;
-        height: 36px;
-        font-size: 12px;
-    }
-    .cellNum {
-        font-size: 9px;
-        margin-bottom: 1px;
-    }
-    .cellName {
-        font-size: 12px;
-    }
-    .numbtn {
-        width: 76px;
-        font-size: 16px;
-    }
-    .bankSlot {
-        width: 72px;
-        height: 32px;
-        line-height: 32px;
-        font-size: 13px;
-    }
+    .navSub { flex: 1 1 0; text-align: center; padding: 7px 4px; font-size: 13px; }
+    .main { padding: 20px 14px 34px; align-items: flex-start; }
+    .panel { padding: 24px 18px 26px; border-radius: 22px; }
+    .title { font-size: 24px; }
+    .backbtn { top: 20px; right: 18px; padding: 7px 13px; font-size: 13px; }
+    .split { flex-direction: column; gap: 16px; }
+    .splitR { width: 100%; padding-top: 0; }
+    .seatCell { width: 52px; height: 48px; font-size: 12px; margin: 0 1px; padding: 0 2px; }
+    .cellNum { font-size: 9px; margin-bottom: 1px; }
+    .cellName { font-size: 12px; }
+    .miniCell { width: 32px; height: 26px; }
+    .miniCell .cellName { font-size: 9px; }
+    .deskGap { width: 9px; }
+    .stable td { font-size: 14px; padding: 7px 3px; }
+    .tableWrap { max-height: 400px; }
+    .colNum { width: 46px; }
+    .colChk { width: 48px; }
+    .colCond { width: 78px; }
+    .numbtn { width: 50px; padding: 9px 0; font-size: 13px; }
+}
+@media (max-width: 520px) {
+    .main { padding: 16px 10px 30px; }
+    .panel { padding: 22px 14px 24px; }
+    .seatBoard { padding: 11px; }
+    .seatCell { width: 44px; height: 44px; margin: 0 1px; }
+    .cellNum { font-size: 8px; margin-bottom: 0; }
+    .cellName { font-size: 11px; }
+    .deskGap { width: 7px; }
+    .miniCell { width: 28px; height: 24px; }
+    .btn { padding: 10px 16px; font-size: 14px; }
+    .controls .btn { margin: 4px 3px; }
+    .navTop { font-size: 12.5px; gap: 5px; }
 }
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div class="shell">
+<nav id="sidebar" class="sidebar"></nav>
+<main id="app" class="main"></main>
+</div>
+<div id="fx"></div>
 <script type="text/javascript">
 (function () {
     // ====== STATE ======
@@ -464,30 +666,48 @@ body {
     var studentCount = 30;
     var absentNumbers = [];
     var participants = [];
-    var students = {};        // num -> { name: '', gender: 'M'|'F' }
-    var enabledSeats = [];    // 2D bool
-    var conditions = {};      // num -> { mustPairWith:null|num, pairGender:''|'M'|'F', allowedSeats:[{r,c}] }
-    var currentSeats = [];    // 2D, num or null  (drag-drop 'before random')
-    var newSeats = [];        // 2D, num or null  (random result / loaded)
-    var state = 'menu';
-    var setupIndex = 0;       // for name entry
-    var conditionEditNum = null;
+    var students = {};
+    var enabledSeats = [];
+    var conditions = {};
+    var currentSeats = [];
+    var newSeats = [];
+
+    var view = 'class.size';
+    var condEditNum = null;
+    var checkedRows = {};
     var selectedBankNum = null;
     var selectedSeatRC = null;
+    var viewSelectedRC = null;
+    var dragSource = null;
+    var condSeatClipboard = null;
     var randomOptions = { noSamePair: false, noSameSeat: false };
+    var condOnCtrl = false;
+    var applyConditions = true;
+    var viewFlipped = false;
     var hasResult = false;
-    var dragSource = null;    // { kind: 'bank'|'seat', num, r, c }
-    var condSeatClipboard = null; // saved allowedSeats list for copying between students
-    var viewSelectedRC = null; // selected seat on the result screen for click-to-swap
+    var revealing = false;
+    var revealTimers = [];
+
+    var GROUPS = [
+        { id: 'class', label: '반 설정', subs: [
+            { id: 'class.size', label: '행/열 · 끝번호' },
+            { id: 'class.seatuse', label: '자리 사용 설정' }
+        ] },
+        { id: 'students', label: '학생 관리', subs: [
+            { id: 'students.list', label: '보기' },
+            { id: 'students.edit', label: '수정' }
+        ] },
+        { id: 'seats', label: '자리 배치', subs: [
+            { id: 'seats.current', label: '현재 자리' },
+            { id: 'seats.random', label: '랜덤 배치' }
+        ] }
+    ];
 
     // ====== HELPERS ======
     function trim(s) { return String(s).replace(/^\s+|\s+$/g, ''); }
     function escapeHtml(v) {
-        return String(v)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+        return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     function escapeTextName(v) { return String(v).replace(/"/g, '""'); }
     function shuffle(arr) {
@@ -496,11 +716,7 @@ body {
             j = Math.floor(Math.random() * (i + 1));
             t = arr[i]; arr[i] = arr[j]; arr[j] = t;
         }
-    }
-    function clone2D(grid) {
-        var out = [], i;
-        for (i = 0; i < grid.length; i++) out.push(grid[i].slice(0));
-        return out;
+        return arr;
     }
     function emptyGrid(value) {
         var out = [], r, c, row;
@@ -540,9 +756,7 @@ body {
     function genderTag(g) { return g === 'F' ? 'F' : 'M'; }
     function getStudentLabel(num) {
         var s = students[num] || {};
-        var name = s.name || '';
-        if (name === '') return num + '번';
-        return num + ' ' + name;
+        return (s.name || '') === '' ? num + '번' : num + ' ' + s.name;
     }
     function getStudentShort(num) {
         var s = students[num] || {};
@@ -551,318 +765,660 @@ body {
         if (name.length > 4) return num + ' ' + name.substring(0, 4);
         return num + ' ' + name;
     }
-
-    // pair-mate seat for a given (r,c): the other seat of the same desk pair
     function getMate(r, c) {
         var pc = c % 2 === 0 ? c + 1 : c - 1;
         if (pc < 0 || pc >= cols) return null;
         return { r: r, c: pc };
     }
-
-    function resetSeatsToSize() {
-        enabledSeats = emptyGrid(true);
-        currentSeats = emptyGrid(null);
-        newSeats = emptyGrid(null);
-    }
-
+    function sameDesk(c1, c2) { return (c1 % 2 === 0 ? c1 + 1 : c1 - 1) === c2; }
     function ensureCondition(num) {
-        if (!conditions[num]) {
-            conditions[num] = { mustPairWith: null, pairGender: '', allowedSeats: [] };
-        }
+        if (!conditions[num]) conditions[num] = { mustPairWith: null, pairGender: '', allowedSeats: [] };
         return conditions[num];
     }
-
-    // ====== RENDERING DISPATCH ======
-    function render() {
-        var app = document.getElementById('app');
-        if (state === 'menu') renderMenu(app);
-        else if (state === 'name') renderName(app);
-        else if (state === 'enable') renderEnable(app);
-        else if (state === 'condList') renderCondList(app);
-        else if (state === 'condEdit') renderCondEdit(app);
-        else if (state === 'currentSeats') renderCurrentSeats(app);
-        else if (state === 'random') renderRandom(app);
+    function hasAnyCondition(num) {
+        var c = conditions[num];
+        if (!c) return false;
+        return c.mustPairWith != null || !!c.pairGender || (c.allowedSeats && c.allowedSeats.length > 0);
     }
-
-    // ====== MENU ======
-    function renderMenu(app) {
-        var html = '';
-        html += '<div class="screen"><div class="panel">';
-        html += '<div class="title">자리 바꾸기</div>';
-        html += '<div class="configwrap">';
-        html += '<div class="configrow"><label class="configlabel" for="rowsInput">행 수</label>';
-        html += '<input id="rowsInput" class="configbox" type="text" value="' + escapeHtml(rows) + '"></div>';
-        html += '<div class="configrow"><label class="configlabel" for="colsInput">열 수</label>';
-        html += '<input id="colsInput" class="configbox" type="text" value="' + escapeHtml(cols) + '"></div>';
-        html += '<div class="configrow"><label class="configlabel" for="countInput">학생 수</label>';
-        html += '<input id="countInput" class="configbox" type="text" value="' + escapeHtml(studentCount) + '"></div>';
-        html += '<div class="configrow"><label class="configlabel" for="absentInput">결번</label>';
-        html += '<input id="absentInput" class="configbox" type="text" value="' + escapeHtml(getAbsentText()) + '" placeholder="예: 3, 7, 12"></div>';
-        html += '</div>';
-        html += '<div class="controls">';
-        html += '<button id="startBtn" class="button">다음</button>';
-        html += '<input id="loadFileMenu" class="fileinput" type="file" accept=".txt">';
-        html += '<button id="loadBtnMenu" class="button secondary">불러오기</button>';
-        html += '</div>';
-        html += '</div></div>';
-        app.innerHTML = html;
-        document.getElementById('startBtn').onclick = applyMenuConfigAndStart;
-        document.getElementById('loadBtnMenu').onclick = function () { openLoadDialog('loadFileMenu'); };
-        document.getElementById('rowsInput').focus();
-    }
-
-    function applyMenuConfigAndStart() {
-        var rText = trim(document.getElementById('rowsInput').value);
-        var cText = trim(document.getElementById('colsInput').value);
-        var nText = trim(document.getElementById('countInput').value);
-        var aText = document.getElementById('absentInput').value;
-        if (!/^\d+$/.test(rText) || !/^\d+$/.test(cText)) {
-            alert('행과 열은 1 이상의 숫자로 입력해 주세요.'); return;
-        }
-        var rN = parseInt(rText, 10), cN = parseInt(cText, 10);
-        if (rN < 1 || rN > 30 || cN < 1 || cN > 30) {
-            alert('행과 열은 1 이상 30 이하로 입력해 주세요.'); return;
-        }
-        if (!/^\d+$/.test(nText)) {
-            alert('총 학생 수는 1 이상의 숫자로 입력해 주세요.'); return;
-        }
-        var nN = parseInt(nText, 10);
-        if (nN < 1 || nN > 999) {
-            alert('총 학생 수는 1 이상 999 이하로 입력해 주세요.'); return;
-        }
-        var pa = parseAbsentList(aText, nN);
-        if (pa === null) {
-            alert('결번 목록은 1부터 총 학생 수 사이의 숫자를 쉼표로 구분해 입력해 주세요.'); return;
-        }
-        rows = rN; cols = cN; studentCount = nN; absentNumbers = pa;
-        buildParticipants();
-        if (participants.length < 1) {
-            alert('참여 인원이 1명 이상이어야 합니다.'); return;
-        }
-        if (participants.length > rows * cols) {
-            alert('자리 수보다 학생 수가 많습니다.'); return;
-        }
-        students = {};
-        conditions = {};
-        resetSeatsToSize();
-        setupIndex = 0;
-        state = 'name';
-        render();
-    }
-
-    // ====== NAME / GENDER ENTRY ======
-    function renderName(app) {
-        var num = participants[setupIndex];
-        var s = students[num] || { name: '', gender: 'M' };
-        var atFirst = setupIndex <= 0;
-        var html = '';
-        html += '<div class="screen"><div class="panel">';
-        html += '<button class="backbtn" id="backBtn">이전</button>';
-        html += '<div class="title">' + num + '번</div>';
-        html += '<div style="height:14px"></div>';
-        html += '<input id="nameInput" class="inputbox" type="text" value="' + escapeHtml(s.name) + '" maxlength="20" placeholder="이름">';
-        html += '<div style="height:14px"></div>';
-        html += '<div class="configwrap" style="text-align:center;max-width:420px;">';
-        html += '<label class="radioLine"><input type="radio" name="genderRadio" value="M"' + (s.gender !== 'F' ? ' checked' : '') + '>남자</label>';
-        html += '<label class="radioLine"><input type="radio" name="genderRadio" value="F"' + (s.gender === 'F' ? ' checked' : '') + '>여자</label>';
-        html += '</div>';
-        html += '<div class="controls">';
-        html += '<button id="prevStudentBtn" class="button secondary"' + (atFirst ? ' disabled' : '') + '>이전</button>';
-        html += '<button id="nextStudentBtn" class="button">다음</button>';
-        html += '</div>';
-        html += '</div></div>';
-        app.innerHTML = html;
-
-        var input = document.getElementById('nameInput');
-        input.focus();
-        input.select();
-
-        document.getElementById('backBtn').onclick = function () {
-            saveCurrentName();
-            state = 'menu'; render();
-        };
-        document.getElementById('nextStudentBtn').onclick = function () {
-            saveCurrentName();
-            moveNextName();
-        };
-        var prevBtn = document.getElementById('prevStudentBtn');
-        prevBtn.onclick = function () {
-            if (atFirst) return;
-            saveCurrentName();
-            setupIndex--;
-            render();
-        };
-        input.onkeydown = function (e) {
-            e = e || window.event;
-            var k = e.keyCode || e.which;
-            if (k === 13) { document.getElementById('nextStudentBtn').onclick(); return false; }
-        };
-    }
-
-    function readSelectedGender() {
-        var radios = document.getElementsByName('genderRadio');
-        var i;
-        for (i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value;
-        return 'M';
-    }
-
-    function saveCurrentName() {
-        var num = participants[setupIndex];
-        var ni = document.getElementById('nameInput');
-        if (!ni) return;
-        var name = trim(ni.value);
-        var g = readSelectedGender();
-        students[num] = { name: name, gender: g };
-    }
-
-    function moveNextName() {
-        setupIndex++;
-        if (setupIndex >= participants.length) {
-            state = 'enable';
-            setupIndex = 0;
-        }
-        render();
-    }
-
-    // ====== ENABLE SEATS ======
-    function renderEnable(app) {
-        var html = '';
-        html += '<div class="screen"><div class="panel">';
-        html += '<button class="backbtn" id="backBtn">이전</button>';
-        html += '<div class="title">자리 사용 여부</div>';
-        html += '<div class="frontLabel">칠판</div>';
-        html += renderSeatBoardHtml('enableBoard', { mode: 'enable' });
-        html += '<div class="controls">';
-        html += '<button id="allOnBtn" class="button secondary">전체 사용</button>';
-        html += '<button id="nextBtn" class="button">다음</button>';
-        html += '</div>';
-        html += '</div></div>';
-        app.innerHTML = html;
-        document.getElementById('backBtn').onclick = function () {
-            setupIndex = participants.length - 1; state = 'name'; render();
-        };
-        document.getElementById('allOnBtn').onclick = function () {
-            enabledSeats = emptyGrid(true); render();
-        };
-        document.getElementById('nextBtn').onclick = function () {
-            if (countEnabled() < participants.length) {
-                alert('활성화된 자리 수가 학생 수보다 적습니다.'); return;
-            }
-            // initialize newSeats and currentSeats grids of correct size, keep prior data when possible
-            ensureSeatGridShape();
-            // make sure all conditions exist and valid against current grid
-            sanitizeConditionsAgainstGrid();
-            state = 'condList'; render();
-        };
-        attachSeatBoardClicks('enableBoard', function (r, c) {
-            enabledSeats[r][c] = !enabledSeats[r][c];
-            // if turning off and a student was placed, clear placement
-            if (!enabledSeats[r][c]) {
-                if (currentSeats[r] && currentSeats[r][c] != null) currentSeats[r][c] = null;
-                if (newSeats[r] && newSeats[r][c] != null) newSeats[r][c] = null;
-            }
-            render();
-        });
-    }
-
     function countEnabled() {
-        var r, c, n = 0;
+        var n = 0, r, c;
         for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) if (enabledSeats[r][c]) n++;
         return n;
     }
-
-    function ensureSeatGridShape() {
-        // resize/preserve grids to (rows, cols)
+    function displayRowOrder() {
+        var arr = [], r;
+        for (r = 0; r < rows; r++) arr.push(r);
+        if (viewFlipped) arr.reverse();
+        return arr;
+    }
+    function displayColOrder() {
+        var arr = [], c;
+        for (c = 0; c < cols; c++) arr.push(c);
+        if (viewFlipped) arr.reverse();
+        return arr;
+    }
+    function removeStudentFromGrids(num) {
         var r, c;
-        var ng;
-        if (!currentSeats || currentSeats.length !== rows || (currentSeats[0] && currentSeats[0].length !== cols)) {
-            ng = emptyGrid(null); currentSeats = ng;
-        }
-        if (!newSeats || newSeats.length !== rows || (newSeats[0] && newSeats[0].length !== cols)) {
-            ng = emptyGrid(null); newSeats = ng;
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+            if (currentSeats[r] && currentSeats[r][c] === num) currentSeats[r][c] = null;
+            if (newSeats[r] && newSeats[r][c] === num) newSeats[r][c] = null;
         }
     }
-
-    function sanitizeConditionsAgainstGrid() {
-        var num, c, kept, i, p;
-        for (num in conditions) {
-            if (!conditions.hasOwnProperty(num)) continue;
-            c = conditions[num];
-            if (!c) continue;
-            // remove allowedSeats that are no longer in bounds or disabled
-            kept = [];
-            for (i = 0; i < (c.allowedSeats || []).length; i++) {
-                p = c.allowedSeats[i];
-                if (p.r < rows && p.c < cols && enabledSeats[p.r][p.c]) kept.push(p);
-            }
-            c.allowedSeats = kept;
-            // mustPairWith must be participant
-            if (c.mustPairWith != null) {
-                if (participants.indexOf(c.mustPairWith) < 0) c.mustPairWith = null;
-            }
-        }
-    }
-
-    // ====== CONDITION LIST ======
-    function renderCondList(app) {
-        var i, num, hasCond;
-        var html = '';
-        html += '<div class="screen"><div class="panel">';
-        html += '<button class="backbtn" id="backBtn">이전</button>';
-        html += '<div class="title">자리 조건 설정</div>';
-        html += '<div class="grid">';
+    function syncRoster() {
+        buildParticipants();
+        var i, num, r, c;
         for (i = 0; i < participants.length; i++) {
             num = participants[i];
-            hasCond = conditionHasAny(num);
-            html += '<button class="numbtn' + (hasCond ? ' cond' : '') + '" id="cond_' + num + '">' + num + '</button>';
+            if (!students[num]) students[num] = { name: '', gender: 'M' };
+        }
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+            if (currentSeats[r][c] != null && participants.indexOf(currentSeats[r][c]) < 0) currentSeats[r][c] = null;
+            if (newSeats[r][c] != null && participants.indexOf(newSeats[r][c]) < 0) newSeats[r][c] = null;
+        }
+        sanitizeConditionsAgainstGrid();
+    }
+    function sanitizeConditionsAgainstGrid() {
+        var i, num, c, k, arr, p, partner, keys = [], key;
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            c = ensureCondition(num);
+            if (c.mustPairWith != null) {
+                partner = c.mustPairWith;
+                if (participants.indexOf(partner) < 0 || partner === num) c.mustPairWith = null;
+            }
+            arr = [];
+            if (c.allowedSeats) {
+                for (k = 0; k < c.allowedSeats.length; k++) {
+                    p = c.allowedSeats[k];
+                    if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols && enabledSeats[p.r][p.c]) arr.push(p);
+                }
+            }
+            c.allowedSeats = arr;
+        }
+        for (key in conditions) if (conditions.hasOwnProperty(key)) keys.push(key);
+        for (i = 0; i < keys.length; i++) {
+            if (participants.indexOf(parseInt(keys[i], 10)) < 0) delete conditions[keys[i]];
+        }
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            c = conditions[num];
+            if (c && c.mustPairWith != null) {
+                var pc = ensureCondition(c.mustPairWith);
+                if (pc.mustPairWith !== num) {
+                    if (pc.mustPairWith == null) pc.mustPairWith = num;
+                    else c.mustPairWith = null;
+                }
+            }
+        }
+    }
+    function clearRevealTimers() {
+        var i;
+        for (i = 0; i < revealTimers.length; i++) clearTimeout(revealTimers[i]);
+        revealTimers = [];
+    }
+
+    // ====== ICONS ======
+    var ICON_CLASS = '<svg class="navIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="2.5" y="4" width="19" height="12.5" rx="1.6"></rect>' +
+        '<line x1="1.5" y1="19.4" x2="22.5" y2="19.4"></line>' +
+        '<rect x="4.2" y="17.1" width="3.4" height="2.3" rx="0.6" fill="currentColor" stroke="none"></rect></svg>';
+    var ICON_STUDENT = '<svg class="navIco" viewBox="0 0 24 24" fill="currentColor">' +
+        '<circle cx="12" cy="7.4" r="4.3"></circle>' +
+        '<path d="M12 13.2c-4.6 0-8.2 2.7-8.2 6.1 0 0.9 0.7 1.5 1.6 1.5h13.2c0.9 0 1.6-0.6 1.6-1.5 0-3.4-3.6-6.1-8.2-6.1z"></path></svg>';
+    var ICON_SHUFFLE = '<svg class="navIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M2.6 5.4h3.1c1.4 0 2.6 0.7 3.4 1.8l5.6 8.4c0.8 1.1 2 1.8 3.4 1.8h3.3"></path>' +
+        '<path d="M2.6 18.6h3.1c1.4 0 2.6-0.7 3.4-1.8l0.9-1.4"></path>' +
+        '<path d="M14.1 8.2l0.6-0.9c0.8-1.2 2-1.9 3.4-1.9h3.3"></path>' +
+        '<polyline points="18.6,2.7 21.6,5.4 18.6,8.1"></polyline>' +
+        '<polyline points="18.6,15.9 21.6,18.6 18.6,21.3"></polyline></svg>';
+    var ICONS = { 'class': ICON_CLASS, 'students': ICON_STUDENT, 'seats': ICON_SHUFFLE };
+
+    // ====== NAVIGATION ======
+    function currentGroup() { return view.split('.')[0]; }
+    function renderSidebar() {
+        var sb = document.getElementById('sidebar');
+        var html = '<div class="navBrand">자리 바꾸기</div>';
+        var g, i, j, sub, active = currentGroup();
+        for (i = 0; i < GROUPS.length; i++) {
+            g = GROUPS[i];
+            html += '<div class="navGroup">';
+            html += '<button class="navTop' + (g.id === active ? ' active' : '') + '" data-g="' + g.id + '">' +
+                ICONS[g.id] + '<span>' + g.label + '</span></button>';
+            if (g.id === active) {
+                html += '<div class="navSubs">';
+                for (j = 0; j < g.subs.length; j++) {
+                    sub = g.subs[j];
+                    html += '<button class="navSub' + (sub.id === view ? ' active' : '') + '" data-v="' + sub.id + '">' + sub.label + '</button>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+        sb.innerHTML = html;
+        var tops = sb.querySelectorAll('[data-g]'), k;
+        for (k = 0; k < tops.length; k++) {
+            (function (el) {
+                el.onclick = function () {
+                    var gid = el.getAttribute('data-g'), n;
+                    for (n = 0; n < GROUPS.length; n++) if (GROUPS[n].id === gid) { goView(GROUPS[n].subs[0].id); return; }
+                };
+            })(tops[k]);
+        }
+        var subsEls = sb.querySelectorAll('[data-v]');
+        for (k = 0; k < subsEls.length; k++) {
+            (function (el) { el.onclick = function () { goView(el.getAttribute('data-v')); }; })(subsEls[k]);
+        }
+    }
+    function goView(v) {
+        if (revealing) return;
+        commitSizeInputs(true);
+        commitEditInputs();
+        view = v;
+        condEditNum = null;
+        selectedBankNum = null;
+        selectedSeatRC = null;
+        viewSelectedRC = null;
+        render();
+    }
+    function render() {
+        renderSidebar();
+        var app = document.getElementById('app');
+        if (condEditNum != null && currentGroup() === 'students') renderCondEdit(app);
+        else if (view === 'class.size') renderClassSize(app);
+        else if (view === 'class.seatuse') renderSeatUse(app);
+        else if (view === 'students.list') renderStudentList(app);
+        else if (view === 'students.edit') renderStudentEdit(app);
+        else if (view === 'seats.current') renderCurrentSeats(app);
+        else renderRandom(app);
+    }
+
+    // ====== SEAT BOARD ======
+    // opts.mode: 'static' | 'seatuse' | 'allowed' | 'place' | 'view'
+    function renderSeatBoardHtml(id, opts) {
+        var mini = !!opts.mini;
+        var html = '<div class="seatBoard' + (mini ? ' mini' : '') + '" id="' + id + '">';
+        var ro = displayRowOrder(), co = displayColOrder();
+        var ri, ci, r, c, cellClass, cellLabel, enabled, extra;
+        for (ri = 0; ri < ro.length; ri++) {
+            r = ro[ri];
+            html += '<div class="seatRow">';
+            for (ci = 0; ci < co.length; ci++) {
+                c = co[ci];
+                enabled = enabledSeats[r] && enabledSeats[r][c];
+                cellClass = 'seatCell' + (mini ? ' miniCell' : '');
+                cellLabel = '';
+                extra = '';
+
+                if (opts.mode === 'static') {
+                    cellClass += ' static';
+                    if (!enabled) cellClass += ' disabled';
+                } else if (opts.mode === 'seatuse') {
+                    if (!enabled) cellClass += ' disabled';
+                } else if (opts.mode === 'allowed') {
+                    if (!enabled) {
+                        cellClass += ' disabled';
+                    } else {
+                        var al = (conditions[opts.num] && conditions[opts.num].allowedSeats) || [];
+                        var isAl = false, k;
+                        for (k = 0; k < al.length; k++) if (al[k].r === r && al[k].c === c) { isAl = true; break; }
+                        if (isAl) cellClass += ' allowed';
+                    }
+                } else if (opts.mode === 'place') {
+                    if (!enabled) {
+                        cellClass += ' disabled';
+                    } else {
+                        var sn = currentSeats[r][c];
+                        if (sn != null) {
+                            cellClass += ' filled' + genderTag((students[sn] || {}).gender || 'M');
+                            cellLabel = twoLineLabel(sn);
+                            if (selectedSeatRC && selectedSeatRC.r === r && selectedSeatRC.c === c) cellClass += ' selected';
+                        }
+                        extra = ' draggable="true"';
+                    }
+                } else if (opts.mode === 'view') {
+                    if (!enabled) {
+                        cellClass += ' disabled';
+                    } else {
+                        var src = opts.useCurrent ? currentSeats : newSeats;
+                        var vn = src[r][c];
+                        if (vn != null) {
+                            cellClass += ' filled' + genderTag((students[vn] || {}).gender || 'M');
+                            cellLabel = twoLineLabel(vn);
+                            if (viewSelectedRC && viewSelectedRC.r === r && viewSelectedRC.c === c) cellClass += ' selected';
+                        }
+                    }
+                }
+                html += '<button class="' + cellClass + '" data-r="' + r + '" data-c="' + c + '"' + extra + '>' + cellLabel + '</button>';
+                if (ci < co.length - 1 && !sameDesk(c, co[ci + 1])) html += '<span class="deskGap"></span>';
+            }
+            html += '</div>';
         }
         html += '</div>';
-        html += '<div class="toolbar">';
-        html += '<button id="clearAllBtn" class="button secondary">전체 초기화</button>';
-        html += '<button id="nextBtn" class="button">다음</button>';
-        html += '</div>';
+        return html;
+    }
+    function twoLineLabel(num) {
+        var s = students[num] || {};
+        var nm = s.name || '';
+        if (nm === '') return '<span class="cellName">' + num + '번</span>';
+        return '<span class="cellNum">' + num + '</span><span class="cellName">' + escapeHtml(nm) + '</span>';
+    }
+    function boardWithChalk(id, opts, withFlip) {
+        var h = '<div class="boardWrap">';
+        if (withFlip) {
+            h += '<div class="flipRow"><button id="flipBtn" class="btn tiny">뒤집기 · ' +
+                (viewFlipped ? '선생님 시점' : '학생 시점') + '</button></div>';
+        }
+        if (!viewFlipped) h += '<div class="chalkRow"><span class="chalk">칠판</span></div>';
+        h += '<div class="boardRow">' + renderSeatBoardHtml(id, opts) + '</div>';
+        if (viewFlipped) h += '<div class="chalkRow bottom"><span class="chalk">칠판</span></div>';
+        return h + '</div>';
+    }
+    function attachFlip() {
+        var b = document.getElementById('flipBtn');
+        if (b) b.onclick = function () { viewFlipped = !viewFlipped; render(); };
+    }
+    function attachBoardClicks(boardId, handler) {
+        var board = document.getElementById(boardId);
+        if (!board) return;
+        var cells = board.getElementsByTagName('button'), i;
+        for (i = 0; i < cells.length; i++) {
+            (function (el) {
+                el.onclick = function (ev) {
+                    handler(parseInt(el.getAttribute('data-r'), 10), parseInt(el.getAttribute('data-c'), 10), ev);
+                };
+            })(cells[i]);
+        }
+    }
+
+    // ====== VIEW: 반 설정 > 행/열 · 끝번호 ======
+    function renderClassSize(app) {
+        var html = '';
+        html += '<div class="panel">';
+        html += '<div class="title">행/열 · 끝번호</div>';
+        html += '<div class="split"><div class="splitL">';
+        html += '<div class="field"><label class="fieldLabel" for="rowsInput">행 수</label>';
+        html += '<input id="rowsInput" class="inputbox" type="text" value="' + escapeHtml(rows) + '"></div>';
+        html += '<div class="field"><label class="fieldLabel" for="colsInput">열 수</label>';
+        html += '<input id="colsInput" class="inputbox" type="text" value="' + escapeHtml(cols) + '"></div>';
+        html += '<div class="field"><label class="fieldLabel" for="countInput">끝번호</label>';
+        html += '<input id="countInput" class="inputbox" type="text" value="' + escapeHtml(studentCount) + '"></div>';
+        html += '<div class="field"><label class="fieldLabel" for="absentInput">결번</label>';
+        html += '<input id="absentInput" class="inputbox" type="text" value="' + escapeHtml(getAbsentText()) + '" placeholder="예: 3, 7, 12"></div>';
+        html += '</div><div class="splitR"><div id="previewWrap">';
+        html += renderSeatBoardHtml('previewBoard', { mode: 'static', mini: true });
+        html += '<div class="previewCap">미리 보기</div></div></div></div>';
+        html += '<div class="controls">';
+        html += '<button id="applyBtn" class="btn primary">적용</button>';
+        html += '<input id="loadFileC" class="fileinput" type="file" accept=".txt">';
+        html += '<button id="loadBtn" class="btn">불러오기</button>';
         html += '</div></div>';
         app.innerHTML = html;
-        document.getElementById('backBtn').onclick = function () { state = 'enable'; render(); };
-        document.getElementById('clearAllBtn').onclick = function () {
-            if (!confirm('모든 조건을 초기화합니다. 진행할까요?')) return;
-            conditions = {}; render();
+
+        var ids = ['rowsInput', 'colsInput', 'countInput', 'absentInput'], i;
+        for (i = 0; i < ids.length; i++) {
+            (function (el) {
+                if (!el) return;
+                el.oninput = function () { refreshPreview(); };
+                el.onkeydown = function (ev) {
+                    if (ev.keyCode === 13 && commitSizeInputs(false)) { view = 'class.seatuse'; render(); }
+                };
+            })(document.getElementById(ids[i]));
+        }
+        document.getElementById('applyBtn').onclick = function () {
+            if (commitSizeInputs(false)) { view = 'class.seatuse'; render(); }
         };
-        document.getElementById('nextBtn').onclick = function () {
-            state = 'currentSeats'; render();
-        };
-        for (i = 0; i < participants.length; i++) attachCondBtn(participants[i]);
+        document.getElementById('loadBtn').onclick = function () { openLoadDialog('loadFileC'); };
+        document.getElementById('loadFileC').onchange = function () { loadFromSelectedFile('loadFileC', false); };
     }
-    function attachCondBtn(num) {
-        var b = document.getElementById('cond_' + num);
-        if (!b) return;
-        b.onclick = function () {
-            conditionEditNum = num; state = 'condEdit'; render();
+
+    // Redraw only the preview so typing never loses focus. Preview is display-only.
+    function refreshPreview() {
+        var wrap = document.getElementById('previewWrap');
+        if (!wrap) return;
+        var rEl = document.getElementById('rowsInput'), cEl = document.getElementById('colsInput');
+        if (rEl && cEl) {
+            var rv = trim(rEl.value), cv = trim(cEl.value);
+            if (/^\d+$/.test(rv) && /^\d+$/.test(cv)) {
+                var nr = parseInt(rv, 10), nc = parseInt(cv, 10);
+                if (nr >= 1 && nr <= 20 && nc >= 1 && nc <= 20 && (nr !== rows || nc !== cols)) resizeGrids(nr, nc);
+            }
+        }
+        wrap.innerHTML = renderSeatBoardHtml('previewBoard', { mode: 'static', mini: true }) +
+            '<div class="previewCap">미리 보기</div>';
+    }
+    function resizeGrids(nr, nc) {
+        var oldE = enabledSeats, oldC = currentSeats, oldN = newSeats;
+        var oldRows = rows, oldCols = cols, r, c;
+        rows = nr; cols = nc;
+        enabledSeats = emptyGrid(true);
+        currentSeats = emptyGrid(null);
+        newSeats = emptyGrid(null);
+        for (r = 0; r < Math.min(rows, oldRows); r++) {
+            for (c = 0; c < Math.min(cols, oldCols); c++) {
+                enabledSeats[r][c] = oldE[r][c];
+                currentSeats[r][c] = oldC[r][c];
+                newSeats[r][c] = oldN[r][c];
+            }
+        }
+        sanitizeConditionsAgainstGrid();
+    }
+    function commitSizeInputs(silent) {
+        var rEl = document.getElementById('rowsInput');
+        if (!rEl) return true;
+        var cEl = document.getElementById('colsInput');
+        var nEl = document.getElementById('countInput');
+        var aEl = document.getElementById('absentInput');
+        var rv = trim(rEl.value), cv = trim(cEl.value), nv = trim(nEl.value), av = aEl.value;
+        if (!/^\d+$/.test(rv) || !/^\d+$/.test(cv) || !/^\d+$/.test(nv)) {
+            if (!silent) alert('행 수, 열 수, 끝번호는 숫자로 입력해 주세요.');
+            return false;
+        }
+        var nr = parseInt(rv, 10), nc = parseInt(cv, 10), nn = parseInt(nv, 10);
+        if (nr < 1 || nc < 1 || nn < 1) {
+            if (!silent) alert('행 수, 열 수, 끝번호는 1 이상이어야 합니다.');
+            return false;
+        }
+        if (nr > 20 || nc > 20 || nn > 200) {
+            if (!silent) alert('행/열은 20 이하, 끝번호는 200 이하로 입력해 주세요.');
+            return false;
+        }
+        var abs = parseAbsentList(av, nn);
+        if (abs === null) {
+            if (!silent) alert('결번은 끝번호 범위 안의 숫자를 쉼표로 구분해 입력해 주세요.');
+            return false;
+        }
+        if (nr !== rows || nc !== cols) resizeGrids(nr, nc);
+        studentCount = nn;
+        absentNumbers = abs;
+        syncRoster();
+        return true;
+    }
+
+    // ====== VIEW: 반 설정 > 자리 사용 설정 ======
+    function renderSeatUse(app) {
+        var html = '';
+        html += '<div class="panel">';
+        html += '<div class="title">자리 사용 설정</div>';
+        html += '<div class="hintline">칸을 눌러 사용 여부를 바꿉니다 · 사용 ' + countEnabled() + ' / 학생 ' + participants.length + '</div>';
+        html += boardWithChalk('useBoard', { mode: 'seatuse' }, true);
+        html += '<div class="controls">';
+        html += '<button id="allOnBtn" class="btn">전체 사용</button>';
+        html += '<button id="allOffBtn" class="btn">전체 해제</button>';
+        html += '<button id="fitBtn" class="btn primary">인원수만큼</button>';
+        html += '</div></div>';
+        app.innerHTML = html;
+
+        attachFlip();
+        attachBoardClicks('useBoard', function (r, c) {
+            enabledSeats[r][c] = !enabledSeats[r][c];
+            if (!enabledSeats[r][c]) { currentSeats[r][c] = null; newSeats[r][c] = null; }
+            sanitizeConditionsAgainstGrid();
+            render();
+        });
+        document.getElementById('allOnBtn').onclick = function () { enabledSeats = emptyGrid(true); render(); };
+        document.getElementById('allOffBtn').onclick = function () {
+            enabledSeats = emptyGrid(false);
+            currentSeats = emptyGrid(null); newSeats = emptyGrid(null);
+            sanitizeConditionsAgainstGrid(); render();
+        };
+        document.getElementById('fitBtn').onclick = function () {
+            enabledSeats = emptyGrid(false);
+            var left = participants.length, r, c;
+            for (r = 0; r < rows && left > 0; r++) {
+                for (c = 0; c < cols && left > 0; c++) { enabledSeats[r][c] = true; left--; }
+            }
+            var rr, cc;
+            for (rr = 0; rr < rows; rr++) for (cc = 0; cc < cols; cc++) {
+                if (!enabledSeats[rr][cc]) { currentSeats[rr][cc] = null; newSeats[rr][cc] = null; }
+            }
+            sanitizeConditionsAgainstGrid(); render();
         };
     }
-    function conditionHasAny(num) {
-        var c = conditions[num];
-        if (!c) return false;
-        if (c.mustPairWith != null) return true;
-        if (c.pairGender) return true;
-        if (c.allowedSeats && c.allowedSeats.length > 0) return true;
+
+    // ====== VIEW: 학생 관리 > 보기 ======
+    function renderStudentList(app) {
+        var html = '';
+        html += '<div class="panel narrow">';
+        html += '<div class="title">학생 보기</div>';
+        html += '<div class="tableWrap"><table class="stable"><thead><tr>';
+        html += '<th class="colChk"><input type="checkbox" id="chkAll"></th>';
+        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colCond">조건</th>';
+        html += '</tr></thead><tbody>';
+        var n, s, absent;
+        for (n = 1; n <= studentCount; n++) {
+            absent = isAbsent(n);
+            s = students[n] || { name: '', gender: 'M' };
+            html += '<tr class="' + (absent ? 'absentRow' : '') + '">';
+            html += '<td class="colChk"><input type="checkbox" class="rowChk" data-n="' + n + '"' + (checkedRows[n] ? ' checked' : '') + '></td>';
+            html += '<td class="colNum">' + n + '</td>';
+            if (absent) {
+                html += '<td>-</td><td class="colGen">-</td><td class="colCond">-</td>';
+            } else {
+                html += '<td>' + (s.name ? escapeHtml(s.name) : '<span style="color:#66707e">이름 없음</span>') + '</td>';
+                html += '<td class="colGen ' + (s.gender === 'F' ? 'gTagF' : 'gTagM') + '">' + (s.gender === 'F' ? '여' : '남') + '</td>';
+                html += '<td class="colCond"><button class="btn tiny ' + (hasAnyCondition(n) ? 'orange' : 'primary') + '" data-cond="' + n + '">' +
+                    (hasAnyCondition(n) ? '수정' : '설정') + '</button></td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div class="rowBetween" style="margin-top:16px;"><div>';
+        html += '<button id="addBtn" class="btn sm">+ 추가</button> ';
+        html += '<button id="delBtn" class="btn sm">- 삭제</button>';
+        html += '</div><div><button id="editBtn" class="btn sm">수정</button></div></div>';
+        html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">';
+        html += '<label class="checkline"><input type="checkbox" id="optCtrl"' + (condOnCtrl ? ' checked' : '') + '>Ctrl+클릭시에만 조건 적용</label>';
+        html += '</div>';
+        html += '<div class="controls">';
+        html += '<input id="loadFileS" class="fileinput" type="file" accept=".txt">';
+        html += '<button id="loadStuBtn" class="btn">학생 설정 불러오기</button>';
+        html += '</div></div>';
+        app.innerHTML = html;
+
+        var chks = document.getElementsByClassName('rowChk'), i;
+        for (i = 0; i < chks.length; i++) {
+            (function (el) {
+                el.onchange = function () {
+                    var num = parseInt(el.getAttribute('data-n'), 10);
+                    if (el.checked) checkedRows[num] = true; else delete checkedRows[num];
+                };
+            })(chks[i]);
+        }
+        document.getElementById('chkAll').onchange = function () {
+            var on = this.checked, k;
+            checkedRows = {};
+            if (on) for (k = 1; k <= studentCount; k++) checkedRows[k] = true;
+            render();
+        };
+        var condBtns = document.querySelectorAll('[data-cond]');
+        for (i = 0; i < condBtns.length; i++) {
+            (function (el) {
+                el.onclick = function () {
+                    condEditNum = parseInt(el.getAttribute('data-cond'), 10);
+                    ensureCondition(condEditNum);
+                    render();
+                };
+            })(condBtns[i]);
+        }
+        document.getElementById('addBtn').onclick = function () {
+            if (studentCount >= 200) { alert('끝번호는 200까지 가능합니다.'); return; }
+            studentCount++;
+            checkedRows = {};
+            syncRoster();
+            render();
+        };
+        document.getElementById('delBtn').onclick = function () {
+            var k, num, any = false;
+            for (k in checkedRows) {
+                if (!checkedRows.hasOwnProperty(k)) continue;
+                num = parseInt(k, 10);
+                if (num < 1 || num > studentCount) continue;
+                if (!isAbsent(num)) { absentNumbers.push(num); any = true; }
+                removeStudentFromGrids(num);
+            }
+            if (!any) { alert('삭제할 학생을 먼저 선택해 주세요.'); return; }
+            absentNumbers.sort(function (a, b) { return a - b; });
+            while (studentCount > 0 && isAbsent(studentCount)) {
+                var ti = absentNumbers.indexOf(studentCount);
+                if (ti >= 0) absentNumbers.splice(ti, 1);
+                delete students[studentCount];
+                delete conditions[studentCount];
+                studentCount--;
+            }
+            checkedRows = {};
+            syncRoster();
+            render();
+        };
+        document.getElementById('editBtn').onclick = function () {
+            view = 'students.edit';
+            render();
+        };
+        document.getElementById('optCtrl').onchange = function () { condOnCtrl = this.checked; };
+        document.getElementById('loadStuBtn').onclick = function () { openLoadDialog('loadFileS'); };
+        document.getElementById('loadFileS').onchange = function () { loadFromSelectedFile('loadFileS', true); };
+    }
+
+    // ====== VIEW: 학생 관리 > 수정 ======
+    // Same table as 보기, but every field is editable in place.
+    function renderStudentEdit(app) {
+        var html = '';
+        html += '<div class="panel narrow">';
+        html += '<div class="title">학생 수정</div>';
+        html += '<div class="tableWrap"><table class="stable"><thead><tr>';
+        html += '<th class="colChk">결번</th>';
+        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colCond">조건</th>';
+        html += '</tr></thead><tbody>';
+        var n, sObj, absent;
+        for (n = 1; n <= studentCount; n++) {
+            absent = isAbsent(n);
+            sObj = students[n] || { name: '', gender: 'M' };
+            html += '<tr class="' + (absent ? 'absentRow' : '') + '">';
+            html += '<td class="colChk"><input type="checkbox" data-abs="' + n + '"' + (absent ? ' checked' : '') + '></td>';
+            html += '<td class="colNum">' + n + '</td>';
+            html += '<td><input class="cellInput" type="text" maxlength="20" data-name="' + n + '" value="' +
+                escapeHtml(sObj.name || '') + '" placeholder="이름"' + (absent ? ' disabled' : '') + '></td>';
+            html += '<td class="colGen"><button class="genBtn' + (sObj.gender === 'F' ? ' f' : '') + '" data-gen="' + n + '"' +
+                (absent ? ' disabled' : '') + '>' + (sObj.gender === 'F' ? '여' : '남') + '</button></td>';
+            if (absent) {
+                html += '<td class="colCond">-</td>';
+            } else {
+                html += '<td class="colCond"><button class="btn tiny ' + (hasAnyCondition(n) ? 'orange' : 'primary') +
+                    '" data-cond="' + n + '">' + (hasAnyCondition(n) ? '수정' : '설정') + '</button></td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div class="controls"><button id="doneStu" class="btn sm">완료</button></div>';
+        html += '<div class="hintline" style="margin:12px 0 0;">Enter 다음 번호 · Shift+Enter 이전 번호</div>';
+        html += '</div>';
+        app.innerHTML = html;
+
+        var i;
+        var nameEls = app.querySelectorAll('[data-name]');
+        for (i = 0; i < nameEls.length; i++) {
+            (function (el) {
+                var num = parseInt(el.getAttribute('data-name'), 10);
+                // write straight to state so re-rendering never steals focus mid-typing
+                el.oninput = function () {
+                    if (!students[num]) students[num] = { name: '', gender: 'M' };
+                    students[num].name = trim(el.value);
+                };
+                el.onkeydown = function (ev) {
+                    if (ev.keyCode !== 13) return;
+                    ev.preventDefault();
+                    focusNameField(num, ev.shiftKey ? -1 : 1);
+                };
+            })(nameEls[i]);
+        }
+        var genEls = app.querySelectorAll('[data-gen]');
+        for (i = 0; i < genEls.length; i++) {
+            (function (el) {
+                var num = parseInt(el.getAttribute('data-gen'), 10);
+                el.onclick = function () {
+                    if (!students[num]) students[num] = { name: '', gender: 'M' };
+                    var next = students[num].gender === 'F' ? 'M' : 'F';
+                    students[num].gender = next;
+                    el.className = 'genBtn' + (next === 'F' ? ' f' : '');
+                    el.innerHTML = next === 'F' ? '여' : '남';
+                };
+            })(genEls[i]);
+        }
+        var absEls = app.querySelectorAll('[data-abs]');
+        for (i = 0; i < absEls.length; i++) {
+            (function (el) {
+                var num = parseInt(el.getAttribute('data-abs'), 10);
+                el.onchange = function () {
+                    commitEditInputs();
+                    if (el.checked) {
+                        if (!isAbsent(num)) {
+                            absentNumbers.push(num);
+                            absentNumbers.sort(function (a, b) { return a - b; });
+                        }
+                        removeStudentFromGrids(num);
+                    } else {
+                        var idx = absentNumbers.indexOf(num);
+                        if (idx >= 0) absentNumbers.splice(idx, 1);
+                    }
+                    syncRoster();
+                    render();
+                };
+            })(absEls[i]);
+        }
+        var condEls = app.querySelectorAll('[data-cond]');
+        for (i = 0; i < condEls.length; i++) {
+            (function (el) {
+                el.onclick = function () {
+                    commitEditInputs();
+                    condEditNum = parseInt(el.getAttribute('data-cond'), 10);
+                    ensureCondition(condEditNum);
+                    render();
+                };
+            })(condEls[i]);
+        }
+        document.getElementById('doneStu').onclick = function () {
+            commitEditInputs(); view = 'students.list'; render();
+        };
+        focusNameField(0, 1);
+    }
+
+    // Move the caret to the next/previous editable name field.
+    function focusNameField(fromNum, dir) {
+        var n = fromNum + dir, el;
+        while (n >= 1 && n <= studentCount) {
+            el = document.querySelector('[data-name="' + n + '"]');
+            if (el && !el.disabled) {
+                el.focus();
+                try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {}
+                return true;
+            }
+            n += dir;
+        }
         return false;
     }
 
-    // ====== CONDITION EDIT ======
+    // Pull whatever is typed in the edit table back into state. Safe to call anywhere.
+    function commitEditInputs() {
+        var els = document.querySelectorAll('[data-name]'), i, num;
+        for (i = 0; i < els.length; i++) {
+            if (els[i].disabled) continue;
+            num = parseInt(els[i].getAttribute('data-name'), 10);
+            if (!students[num]) students[num] = { name: '', gender: 'M' };
+            students[num].name = trim(els[i].value);
+        }
+    }
+
+    // ====== 조건 편집 ======
     function renderCondEdit(app) {
-        var num = conditionEditNum;
+        var num = condEditNum;
         var c = ensureCondition(num);
         var locked = c.mustPairWith != null;
         var html = '';
-        html += '<div class="screen"><div class="panel">';
+        html += '<div class="panel narrow">';
         html += '<button class="backbtn" id="backBtn">이전</button>';
         html += '<div class="title">' + escapeHtml(getStudentLabel(num)) + '</div>';
 
-        // (c) must pair with
         html += '<div class="condSection"><div class="condSectionTitle">강제 짝</div>';
-        html += '<select id="forceSelect" class="configbox" style="max-width:300px;">';
-        html += '<option value="">없음</option>';
+        html += '<select id="forceSelect" class="selectbox"><option value="">없음</option>';
         var i, p;
         for (i = 0; i < participants.length; i++) {
             p = participants[i];
@@ -871,50 +1427,49 @@ body {
         }
         html += '</select></div>';
 
-        // (a) gender
         html += '<div class="condSection' + (locked ? ' disabled' : '') + '"><div class="condSectionTitle">짝 성별</div>';
-        html += '<label class="radioLine"><input type="radio" name="cgender" value=""' + (c.pairGender === '' ? ' checked' : '') + (locked ? ' disabled' : '') + '>없음</label>';
-        html += '<label class="radioLine"><input type="radio" name="cgender" value="M"' + (c.pairGender === 'M' ? ' checked' : '') + (locked ? ' disabled' : '') + '>남자</label>';
-        html += '<label class="radioLine"><input type="radio" name="cgender" value="F"' + (c.pairGender === 'F' ? ' checked' : '') + (locked ? ' disabled' : '') + '>여자</label>';
+        html += '<label class="radioLine"><input type="radio" name="cgender" value=""' + (c.pairGender === '' ? ' checked' : '') + '>없음</label>';
+        html += '<label class="radioLine"><input type="radio" name="cgender" value="M"' + (c.pairGender === 'M' ? ' checked' : '') + '>남자</label>';
+        html += '<label class="radioLine"><input type="radio" name="cgender" value="F"' + (c.pairGender === 'F' ? ' checked' : '') + '>여자</label>';
         html += '</div>';
 
-        // (b) allowed seats
         html += '<div class="condSection' + (locked ? ' disabled' : '') + '"><div class="condSectionTitle">자리 제한</div>';
-        html += renderSeatBoardHtml('allowedBoard', { mode: 'allowed', num: num, mini: true });
-        html += '<div style="text-align:center;margin-top:8px;">';
-        html += '<button id="clearAllowedBtn" class="button secondary"' + (locked ? ' disabled' : '') + '>해제</button>';
-        html += '<button id="copyAllowedBtn" class="button secondary"' + (locked ? ' disabled' : '') + '>저장</button>';
-        html += '<button id="pasteAllowedBtn" class="button secondary"' + ((locked || !condSeatClipboard) ? ' disabled' : '') + '>불러오기</button>';
-        html += '</div>';
-        html += '</div>';
+        html += '<div class="boardRow" style="text-align:center;">' + renderSeatBoardHtml('allowedBoard', { mode: 'allowed', num: num, mini: true }) + '</div>';
+        html += '<div style="text-align:center;margin-top:10px;">';
+        html += '<button id="clearAllowedBtn" class="btn tiny">해제</button> ';
+        html += '<button id="copyAllowedBtn" class="btn tiny">저장</button> ';
+        html += '<button id="pasteAllowedBtn" class="btn tiny"' + (condSeatClipboard ? '' : ' disabled') + '>불러오기</button>';
+        html += '</div></div>';
 
         html += '<div class="controls">';
-        html += '<button id="saveCondBtn" class="button">저장</button>';
-        html += '<button id="resetCondBtn" class="button danger">초기화</button>';
-        html += '</div>';
+        html += '<button id="saveCondBtn" class="btn primary">저장</button>';
+        html += '<button id="resetCondBtn" class="btn red">초기화</button>';
         html += '</div></div>';
         app.innerHTML = html;
 
-        document.getElementById('backBtn').onclick = function () { state = 'condList'; render(); };
-        document.getElementById('saveCondBtn').onclick = function () { saveCondEdit(); state = 'condList'; render(); };
+        function saveCond() {
+            var v = document.getElementById('forceSelect').value;
+            var prevPartner = c.mustPairWith;
+            c.mustPairWith = v === '' ? null : parseInt(v, 10);
+            if (prevPartner != null && prevPartner !== c.mustPairWith) {
+                var pc = conditions[prevPartner];
+                if (pc && pc.mustPairWith === num) pc.mustPairWith = null;
+            }
+            if (c.mustPairWith != null) ensureCondition(c.mustPairWith).mustPairWith = num;
+            var radios = document.getElementsByName('cgender'), i2;
+            for (i2 = 0; i2 < radios.length; i2++) if (radios[i2].checked) c.pairGender = radios[i2].value;
+        }
+        document.getElementById('backBtn').onclick = function () { saveCond(); condEditNum = null; render(); };
+        document.getElementById('saveCondBtn').onclick = function () { saveCond(); condEditNum = null; render(); };
         document.getElementById('resetCondBtn').onclick = function () {
-            // also remove pair from partner if linked
-            var cur = conditions[num];
-            if (cur && cur.mustPairWith != null) {
-                var partner = cur.mustPairWith;
-                if (conditions[partner] && conditions[partner].mustPairWith === num) {
-                    conditions[partner].mustPairWith = null;
-                }
+            if (c.mustPairWith != null) {
+                var pc = conditions[c.mustPairWith];
+                if (pc && pc.mustPairWith === num) pc.mustPairWith = null;
             }
             conditions[num] = { mustPairWith: null, pairGender: '', allowedSeats: [] };
             render();
         };
-        document.getElementById('forceSelect').onchange = function () {
-            // live update
-            var v = document.getElementById('forceSelect').value;
-            c.mustPairWith = v === '' ? null : parseInt(v, 10);
-            render();
-        };
+        document.getElementById('forceSelect').onchange = function () { saveCond(); render(); };
         document.getElementById('clearAllowedBtn').onclick = function () {
             if (locked) return;
             c.allowedSeats = []; render();
@@ -922,29 +1477,21 @@ body {
         document.getElementById('copyAllowedBtn').onclick = function () {
             if (locked) return;
             var arr = [], k;
-            for (k = 0; k < c.allowedSeats.length; k++) {
-                arr.push({ r: c.allowedSeats[k].r, c: c.allowedSeats[k].c });
-            }
+            for (k = 0; k < c.allowedSeats.length; k++) arr.push({ r: c.allowedSeats[k].r, c: c.allowedSeats[k].c });
             condSeatClipboard = arr;
             render();
         };
         document.getElementById('pasteAllowedBtn').onclick = function () {
-            if (locked) return;
-            if (!condSeatClipboard) return;
-            var arr = [], k, p;
+            if (locked || !condSeatClipboard) return;
+            var arr = [], k, pp;
             for (k = 0; k < condSeatClipboard.length; k++) {
-                p = condSeatClipboard[k];
-                if (p.r < rows && p.c < cols && enabledSeats[p.r] && enabledSeats[p.r][p.c]) {
-                    arr.push({ r: p.r, c: p.c });
-                }
+                pp = condSeatClipboard[k];
+                if (pp.r < rows && pp.c < cols && enabledSeats[pp.r] && enabledSeats[pp.r][pp.c]) arr.push({ r: pp.r, c: pp.c });
             }
-            c.allowedSeats = arr;
-            render();
+            c.allowedSeats = arr; render();
         };
-        attachSeatBoardClicks('allowedBoard', function (r, cc) {
-            if (locked) return;
-            if (!enabledSeats[r][cc]) return;
-            // toggle
+        attachBoardClicks('allowedBoard', function (r, cc) {
+            if (locked || !enabledSeats[r][cc]) return;
             var found = -1, k;
             for (k = 0; k < c.allowedSeats.length; k++) {
                 if (c.allowedSeats[k].r === r && c.allowedSeats[k].c === cc) { found = k; break; }
@@ -954,263 +1501,196 @@ body {
             render();
         });
     }
-    function saveCondEdit() {
-        var num = conditionEditNum;
-        var c = ensureCondition(num);
-        var radios = document.getElementsByName('cgender'), i;
-        var g = '';
-        for (i = 0; i < radios.length; i++) if (radios[i].checked) { g = radios[i].value; break; }
-        c.pairGender = g;
-        // sync mustPairWith bidirectionally
-        var v = document.getElementById('forceSelect').value;
-        var newPair = v === '' ? null : parseInt(v, 10);
-        // first, if previously had a pair partner that's different, clear theirs
-        var oldPair = c.mustPairWith;
-        c.mustPairWith = newPair;
-        if (oldPair != null && oldPair !== newPair) {
-            if (conditions[oldPair] && conditions[oldPair].mustPairWith === num) {
-                conditions[oldPair].mustPairWith = null;
-            }
-        }
-        if (newPair != null) {
-            ensureCondition(newPair).mustPairWith = num;
-        }
-    }
 
-    // ====== CURRENT SEATS (drag-drop) ======
+    // ====== VIEW: 자리 배치 > 현재 자리 ======
     function renderCurrentSeats(app) {
         var html = '';
-        html += '<div class="screen"><div class="panel">';
-        html += '<button class="backbtn" id="backBtn">이전</button>';
-        html += '<div class="title">현재 자리 배치</div>';
-        html += renderStudentBankHtml();
-        html += '<div class="frontLabel">칠판</div>';
-        html += renderSeatBoardHtml('currentBoard', { mode: 'currentSeats' });
+        html += '<div class="panel">';
+        html += '<div class="title">현재 자리</div>';
+        html += '<div class="hintline">끌어놓거나, 학생을 누른 뒤 자리를 눌러 배치합니다</div>';
+        html += boardWithChalk('mainBoard', { mode: 'place' }, true);
+        html += '<div class="bank" id="bank">' + renderBankHtml() + '</div>';
         html += '<div class="controls">';
-        html += '<button id="clearBtn" class="button secondary">비우기</button>';
-        html += '<button id="autoBtn" class="button secondary">번호순</button>';
-        html += '<button id="nextBtn" class="button">다음</button>';
-        html += '</div>';
+        html += '<button id="clearBtn" class="btn">비우기</button>';
+        html += '<button id="autoBtn" class="btn">번호순</button>';
+        html += '<button id="goRandomBtn" class="btn primary">랜덤 배치로</button>';
         html += '</div></div>';
         app.innerHTML = html;
-        document.getElementById('backBtn').onclick = function () { state = 'condList'; render(); };
+
+        attachFlip();
         document.getElementById('clearBtn').onclick = function () {
             currentSeats = emptyGrid(null); selectedBankNum = null; selectedSeatRC = null; render();
         };
         document.getElementById('autoBtn').onclick = function () {
-            // fill participants in order into enabled seats row by row
-            var i = 0, r, c;
             currentSeats = emptyGrid(null);
-            for (r = 0; r < rows; r++) {
-                for (c = 0; c < cols; c++) {
-                    if (enabledSeats[r][c] && i < participants.length) {
-                        currentSeats[r][c] = participants[i]; i++;
-                    }
+            var idx = 0, r, c;
+            for (r = 0; r < rows && idx < participants.length; r++) {
+                for (c = 0; c < cols && idx < participants.length; c++) {
+                    if (!enabledSeats[r][c]) continue;
+                    currentSeats[r][c] = participants[idx++];
                 }
             }
             selectedBankNum = null; selectedSeatRC = null; render();
         };
-        document.getElementById('nextBtn').onclick = function () {
-            // entering random fresh: clear prior result so we initially show current seats
-            hasResult = false;
-            viewSelectedRC = null;
-            state = 'random'; render();
-        };
-        attachBankInteractions(currentSeats);
-        attachSeatBoardInteractions('currentBoard', currentSeats);
+        document.getElementById('goRandomBtn').onclick = function () { goView('seats.random'); };
+        attachBankInteractions();
+        attachPlaceInteractions();
     }
 
-    function renderStudentBankHtml() {
-        // show participants not yet placed in currentSeats
-        var placed = {}, r, c, i, num;
+    function renderBankHtml() {
+        var placed = {}, r, c, i, num, html = '', any = false;
         for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
             if (currentSeats[r][c] != null) placed[currentSeats[r][c]] = true;
         }
-        var html = '<div class="studentBank" id="studentBank">';
-        var any = false;
         for (i = 0; i < participants.length; i++) {
             num = participants[i];
             if (placed[num]) continue;
             any = true;
-            var s = students[num] || { gender: 'M' };
-            var sel = selectedBankNum === num ? ' selected' : '';
-            html += '<button class="bankSlot ' + genderTag(s.gender) + sel + '" data-num="' + num + '" data-kind="bank">' + escapeHtml(getStudentShort(num)) + '</button>';
+            html += '<button class="bankSlot' + ((students[num] || {}).gender === 'F' ? ' femaleSlot' : '') +
+                (selectedBankNum === num ? ' selected' : '') + '" data-bn="' + num + '" draggable="true">' +
+                escapeHtml(getStudentShort(num)) + '</button>';
         }
-        if (!any) html += '<span class="bankEmpty">모든 학생이 배치되었습니다.</span>';
-        html += '</div>';
+        if (!any) html = '<div class="bankEmpty">모든 학생이 배치되었습니다.</div>';
         return html;
     }
 
-    function attachBankInteractions(grid) {
-        var bank = document.getElementById('studentBank');
-        if (!bank) return;
-        var slots = bank.getElementsByClassName('bankSlot'), i;
+    function attachBankInteractions() {
+        var slots = document.querySelectorAll('[data-bn]'), i;
         for (i = 0; i < slots.length; i++) {
-            (function (slot) {
-                var num = parseInt(slot.getAttribute('data-num'), 10);
-                slot.onclick = function () {
-                    if (selectedBankNum === num) selectedBankNum = null;
-                    else { selectedBankNum = num; selectedSeatRC = null; }
+            (function (el) {
+                var num = parseInt(el.getAttribute('data-bn'), 10);
+                el.onclick = function () {
+                    selectedSeatRC = null;
+                    selectedBankNum = (selectedBankNum === num) ? null : num;
                     render();
                 };
-                slot.draggable = true;
-                slot.ondragstart = function (e) {
+                el.ondragstart = function (ev) {
                     dragSource = { kind: 'bank', num: num };
-                    if (e.dataTransfer) {
-                        e.dataTransfer.effectAllowed = 'move';
-                        try { e.dataTransfer.setData('text/plain', String(num)); } catch (err) {}
-                    }
+                    if (ev.dataTransfer) { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', String(num)); }
                 };
-                slot.ondragend = function () { dragSource = null; };
+                el.ondragend = function () { dragSource = null; };
             })(slots[i]);
         }
-        // drop on the bank to remove from seat
-        bank.ondragover = function (e) { e.preventDefault(); };
-        bank.ondrop = function (e) {
-            e.preventDefault();
-            if (!dragSource) return;
-            if (dragSource.kind === 'seat') {
-                grid[dragSource.r][dragSource.c] = null;
+        var bank = document.getElementById('bank');
+        if (!bank) return;
+        bank.ondragover = function (ev) { ev.preventDefault(); };
+        bank.ondrop = function (ev) {
+            ev.preventDefault();
+            if (dragSource && dragSource.kind === 'seat') {
+                currentSeats[dragSource.r][dragSource.c] = null;
+                dragSource = null;
                 render();
             }
-            dragSource = null;
         };
     }
 
-    function attachSeatBoardInteractions(boardId, grid) {
-        var board = document.getElementById(boardId);
+    function attachPlaceInteractions() {
+        var board = document.getElementById('mainBoard');
         if (!board) return;
-        var cells = board.getElementsByClassName('seatCell'), i;
+        var cells = board.getElementsByTagName('button'), i;
         for (i = 0; i < cells.length; i++) {
-            (function (cell) {
-                var r = parseInt(cell.getAttribute('data-r'), 10);
-                var c = parseInt(cell.getAttribute('data-c'), 10);
-                cell.onclick = function () {
-                    if (!enabledSeats[r][c]) return;
-                    handleSeatClick(grid, r, c);
+            (function (el) {
+                var r = parseInt(el.getAttribute('data-r'), 10);
+                var c = parseInt(el.getAttribute('data-c'), 10);
+                el.onclick = function () { handlePlaceClick(r, c); };
+                el.ondragstart = function (ev) {
+                    if (currentSeats[r][c] == null) { ev.preventDefault(); return; }
+                    dragSource = { kind: 'seat', num: currentSeats[r][c], r: r, c: c };
+                    if (ev.dataTransfer) { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', String(currentSeats[r][c])); }
                 };
-                cell.draggable = true;
-                cell.ondragstart = function (e) {
-                    if (!enabledSeats[r][c]) { e.preventDefault(); return; }
-                    if (grid[r][c] == null) { e.preventDefault(); return; }
-                    dragSource = { kind: 'seat', r: r, c: c, num: grid[r][c] };
-                    if (e.dataTransfer) {
-                        e.dataTransfer.effectAllowed = 'move';
-                        try { e.dataTransfer.setData('text/plain', String(grid[r][c])); } catch (err) {}
-                    }
-                };
-                cell.ondragend = function () { dragSource = null; };
-                cell.ondragover = function (e) {
-                    if (!enabledSeats[r][c]) return;
-                    e.preventDefault();
-                    cell.classList.add('dragover');
-                };
-                cell.ondragleave = function () { cell.classList.remove('dragover'); };
-                cell.ondrop = function (e) {
-                    e.preventDefault();
-                    cell.classList.remove('dragover');
-                    if (!enabledSeats[r][c]) return;
-                    if (!dragSource) return;
+                el.ondragend = function () { dragSource = null; };
+                el.ondragover = function (ev) { if (enabledSeats[r][c]) { ev.preventDefault(); el.className += ' dropTarget'; } };
+                el.ondragleave = function () { el.className = el.className.replace(/ dropTarget/g, ''); };
+                el.ondrop = function (ev) {
+                    ev.preventDefault();
+                    el.className = el.className.replace(/ dropTarget/g, '');
+                    if (!dragSource || !enabledSeats[r][c]) return;
                     if (dragSource.kind === 'bank') {
-                        // place num at (r,c). If there was someone, kick them to bank.
-                        var moving = dragSource.num;
-                        // find existing position of moving (should be none since coming from bank)
-                        grid[r][c] = moving;
-                    } else if (dragSource.kind === 'seat') {
-                        if (dragSource.r === r && dragSource.c === c) { dragSource = null; return; }
-                        var src = grid[dragSource.r][dragSource.c];
-                        var dst = grid[r][c];
-                        grid[r][c] = src;
-                        grid[dragSource.r][dragSource.c] = dst;
+                        currentSeats[r][c] = dragSource.num;
+                    } else {
+                        var t = currentSeats[r][c];
+                        currentSeats[r][c] = dragSource.num;
+                        currentSeats[dragSource.r][dragSource.c] = t;
                     }
                     dragSource = null;
+                    selectedBankNum = null; selectedSeatRC = null;
                     render();
                 };
             })(cells[i]);
         }
     }
 
-    function handleSeatClick(grid, r, c) {
-        // click logic for placing/swapping
+    function handlePlaceClick(r, c) {
+        if (!enabledSeats[r][c]) return;
         if (selectedBankNum != null) {
-            // place selected bank student here, kick previous to bank
-            grid[r][c] = selectedBankNum;
-            selectedBankNum = null;
-            render();
-            return;
+            currentSeats[r][c] = selectedBankNum;
+            selectedBankNum = null; selectedSeatRC = null;
+            render(); return;
         }
         if (selectedSeatRC) {
             var sr = selectedSeatRC.r, sc = selectedSeatRC.c;
-            if (sr === r && sc === c) {
-                selectedSeatRC = null; render(); return;
-            }
-            var t = grid[r][c];
-            grid[r][c] = grid[sr][sc];
-            grid[sr][sc] = t;
-            selectedSeatRC = null;
-            render();
-            return;
+            if (sr === r && sc === c) { selectedSeatRC = null; render(); return; }
+            var t = currentSeats[r][c];
+            currentSeats[r][c] = currentSeats[sr][sc];
+            currentSeats[sr][sc] = t;
+            selectedSeatRC = null; render(); return;
         }
-        // nothing selected: select this seat if it has a student, else select empty? Skip empty.
-        if (grid[r][c] != null) {
-            selectedSeatRC = { r: r, c: c };
-            render();
-        }
+        if (currentSeats[r][c] != null) { selectedSeatRC = { r: r, c: c }; render(); }
     }
 
-    // ====== RANDOM (showing current seats initially, new seats after click) ======
+    // ====== VIEW: 자리 배치 > 랜덤 배치 ======
     function renderRandom(app) {
         var html = '';
-        html += '<div class="screen"><div class="panel">';
-        html += '<button class="backbtn" id="backBtn">이전</button>';
-        html += '<div class="title">자리 랜덤 배치</div>';
-
-        html += '<div class="frontLabel">칠판</div>';
-        html += renderSeatBoardHtml('resultBoard', { mode: 'view', useCurrent: !hasResult });
-
-        html += '<div class="configwrap" style="text-align:left;margin-top:14px;">';
-        html += '<label class="checkline"><input id="optPair" type="checkbox"' + (randomOptions.noSamePair ? ' checked' : '') + '>같은 짝 다시 반복 금지</label>';
-        html += '<label class="checkline"><input id="optSeat" type="checkbox"' + (randomOptions.noSameSeat ? ' checked' : '') + '>했던 자리 다시 앉지 않기</label>';
+        html += '<div class="panel">';
+        html += '<div class="title">랜덤 배치</div>';
+        html += boardWithChalk('mainBoard', { mode: 'view', useCurrent: !hasResult }, true);
+        html += '<div style="text-align:center;margin-top:14px;">';
+        html += '<label class="checkline"><input type="checkbox" id="optPair"' + (randomOptions.noSamePair ? ' checked' : '') + '>같은 짝 다시 반복 금지</label>';
+        html += '<label class="checkline"><input type="checkbox" id="optSeat"' + (randomOptions.noSameSeat ? ' checked' : '') + '>했던 자리 다시 앉지 않기</label>';
         html += '</div>';
         html += '<div class="controls">';
-        html += '<button id="goBtn" class="button">자리 배치</button>';
+        if (hasResult) {
+            html += '<button id="backEditBtn" class="btn">되돌리기</button>';
+            html += '<button id="applySeatBtn" class="btn green">현재 자리로 적용</button>';
+        }
+        html += '<button id="goBtn" class="btn primary">자리 배치</button>';
         html += '</div>';
-
-        html += '<div class="controls">';
-        html += '<button id="saveBtn" class="button">저장</button>';
+        html += '<div class="controls" style="margin-top:4px;">';
+        html += '<button id="saveBtn" class="btn sm">저장</button>';
         html += '<input id="loadFileR" class="fileinput" type="file" accept=".txt">';
-        html += '<button id="loadBtn" class="button secondary">불러오기</button>';
+        html += '<button id="loadBtn2" class="btn sm">불러오기</button>';
         html += '</div>';
-
-        html += '</div></div>';
+        html += '<div class="hintline" style="margin:14px 0 0;">Shift+배치로 추첨 연출' +
+            (condOnCtrl ? ' · Ctrl+배치로 조건 적용' : '') + '</div>';
+        html += '</div>';
         app.innerHTML = html;
 
-        document.getElementById('backBtn').onclick = function () { viewSelectedRC = null; state = 'currentSeats'; render(); };
-        document.getElementById('optPair').onchange = function () {
-            randomOptions.noSamePair = document.getElementById('optPair').checked;
-        };
-        document.getElementById('optSeat').onchange = function () {
-            randomOptions.noSameSeat = document.getElementById('optSeat').checked;
-        };
-        document.getElementById('goBtn').onclick = function () {
-            randomOptions.noSamePair = document.getElementById('optPair').checked;
-            randomOptions.noSameSeat = document.getElementById('optSeat').checked;
-            doRandomArrangement();
-        };
+        attachFlip();
+        document.getElementById('optPair').onchange = function () { randomOptions.noSamePair = this.checked; };
+        document.getElementById('optSeat').onchange = function () { randomOptions.noSameSeat = this.checked; };
         document.getElementById('saveBtn').onclick = saveToFile;
-        document.getElementById('loadBtn').onclick = function () { openLoadDialog('loadFileR'); };
-
-        // click-to-swap: only active when showing the new arrangement (hasResult)
+        document.getElementById('loadBtn2').onclick = function () { openLoadDialog('loadFileR'); };
+        document.getElementById('loadFileR').onchange = function () { loadFromSelectedFile('loadFileR', false); };
+        document.getElementById('goBtn').onclick = function (ev) {
+            applyConditions = condOnCtrl ? !!(ev.ctrlKey || ev.metaKey) : true;
+            doArrangement(!!ev.shiftKey);
+        };
         if (hasResult) {
-            attachSeatBoardClicks('resultBoard', function (r, c) {
-                var vn = newSeats[r][c];
-                if (!enabledSeats[r][c]) { viewSelectedRC = null; render(); return; }
-                if (vn == null) { viewSelectedRC = null; render(); return; }
-                if (!viewSelectedRC) {
-                    viewSelectedRC = { r: r, c: c };
-                } else if (viewSelectedRC.r === r && viewSelectedRC.c === c) {
-                    viewSelectedRC = null;
-                } else {
+            document.getElementById('backEditBtn').onclick = function () {
+                hasResult = false; viewSelectedRC = null; render();
+            };
+            document.getElementById('applySeatBtn').onclick = function () {
+                var r, c;
+                for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) currentSeats[r][c] = newSeats[r][c];
+                hasResult = false; viewSelectedRC = null; render();
+            };
+            attachBoardClicks('mainBoard', function (r, c, ev) {
+                if (revealing) return;
+                if (!enabledSeats[r][c] || newSeats[r][c] == null) { viewSelectedRC = null; render(); return; }
+                if (ev && ev.shiftKey) { spotlightCell(r, c); return; }
+                if (!viewSelectedRC) viewSelectedRC = { r: r, c: c };
+                else if (viewSelectedRC.r === r && viewSelectedRC.c === c) viewSelectedRC = null;
+                else {
                     var sr = viewSelectedRC.r, sc = viewSelectedRC.c;
                     var t = newSeats[r][c];
                     newSeats[r][c] = newSeats[sr][sc];
@@ -1222,47 +1702,151 @@ body {
         }
     }
 
-    function doRandomArrangement() {
-        // validate forced pair consistency among participants
-        var i, num, c, partner;
-        for (i = 0; i < participants.length; i++) {
-            num = participants[i];
-            c = conditions[num];
-            if (c && c.mustPairWith != null) {
-                partner = c.mustPairWith;
-                if (participants.indexOf(partner) < 0) {
-                    alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다');
-                    return;
-                }
-                if (!conditions[partner] || conditions[partner].mustPairWith !== num) {
-                    // auto-repair, but if explicitly mismatched, fail
+    // ====== ARRANGEMENT ======
+    function doArrangement(fancy) {
+        if (revealing) return;
+        if (participants.length === 0) { alert('학생이 없습니다.'); return; }
+        if (countEnabled() < participants.length) {
+            alert('사용 가능한 자리가 인원수보다 적습니다.');
+            return;
+        }
+        if (applyConditions) {
+            var i, num, c, partner;
+            for (i = 0; i < participants.length; i++) {
+                num = participants[i];
+                c = conditions[num];
+                if (c && c.mustPairWith != null) {
+                    partner = c.mustPairWith;
+                    if (participants.indexOf(partner) < 0) { alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다'); return; }
                     if (conditions[partner] && conditions[partner].mustPairWith != null && conditions[partner].mustPairWith !== num) {
-                        alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다');
-                        return;
+                        alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다'); return;
                     }
                     ensureCondition(partner).mustPairWith = num;
                 }
             }
         }
-        // try several random restarts
-        var attempts = 0, maxAttempts = 12, result = null;
-        while (attempts < maxAttempts && !result) {
-            result = runBacktrackSolver();
-            attempts++;
-        }
-        if (!result) {
-            alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다');
-            return;
-        }
+        var attempts = 0, result = null;
+        while (attempts < 14 && !result) { result = runBacktrackSolver(); attempts++; }
+        if (!result) { alert('조건에 오류 발생: 조건을 모두 완성할 수 없습니다'); return; }
         newSeats = result;
-        hasResult = true;
         viewSelectedRC = null;
+        if (fancy) startReveal();
+        else { hasResult = true; render(); }
+    }
+
+    // ====== SHIFT REVEAL ======
+    function startReveal() {
+        hasResult = true;
+        revealing = true;
         render();
+        var board = document.getElementById('mainBoard');
+        if (!board) { revealing = false; render(); return; }
+
+        var targets = [], r, c, el;
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+            if (newSeats[r][c] == null) continue;
+            el = board.querySelector('[data-r="' + r + '"][data-c="' + c + '"]');
+            if (el) targets.push({ el: el, num: newSeats[r][c] });
+        }
+        if (targets.length === 0) { revealing = false; render(); return; }
+        shuffle(targets);
+
+        var fx = document.getElementById('fx');
+        var flash = document.createElement('div');
+        flash.className = 'flash';
+        fx.appendChild(flash);
+        setTimeout(function () { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 600);
+        var sweep = document.createElement('div');
+        sweep.className = 'sweep';
+        board.appendChild(sweep);
+        setTimeout(function () { if (sweep.parentNode) sweep.parentNode.removeChild(sweep); }, 1150);
+
+        var pool = participants.slice(0), t;
+        for (t = 0; t < targets.length; t++) {
+            targets[t].el.className = 'seatCell spinning';
+            targets[t].el.innerHTML = '<span class="cellName">' + escapeHtml(randPoolName(pool)) + '</span>';
+        }
+        var spinner = setInterval(function () {
+            var k;
+            for (k = 0; k < targets.length; k++) {
+                if (targets[k].done) continue;
+                targets[k].el.innerHTML = '<span class="cellName">' + escapeHtml(randPoolName(pool)) + '</span>';
+            }
+        }, 62);
+
+        // Tension comes from pacing, not effects: each reveal waits longer than the last,
+        // and the final seat is held back while its name keeps flickering.
+        var base = targets.length > 22 ? 70 : (targets.length > 12 ? 100 : 145);
+        var delay = 620, i2, gap;
+        for (i2 = 0; i2 < targets.length; i2++) {
+            if (i2 === targets.length - 1) delay += 620;
+            (function (item, at) {
+                revealTimers.push(setTimeout(function () {
+                    item.done = true;
+                    var g = genderTag((students[item.num] || {}).gender || 'M');
+                    item.el.className = 'seatCell filled' + g + ' locked';
+                    item.el.innerHTML = twoLineLabel(item.num);
+                    sparkAt(item.el, g === 'F' ? '#f393bb' : '#8fbaff', 5);
+                }, at));
+            })(targets[i2], delay);
+            gap = base * (1 + 2.6 * (i2 + 1) / targets.length);
+            delay += gap;
+        }
+        revealTimers.push(setTimeout(function () {
+            clearInterval(spinner);
+            clearRevealTimers();
+            revealing = false;
+            render();
+        }, delay + 620));
+    }
+
+    function randPoolName(pool) {
+        var n = pool[Math.floor(Math.random() * pool.length)];
+        var s = students[n] || {};
+        return s.name ? s.name : (n + '번');
+    }
+
+    function spotlightCell(r, c) {
+        var board = document.getElementById('mainBoard');
+        if (!board) return;
+        var el = board.querySelector('[data-r="' + r + '"][data-c="' + c + '"]');
+        if (!el) return;
+        el.className = el.className.replace(/ burst/g, '') + ' burst';
+        var g = genderTag((students[newSeats[r][c]] || {}).gender || 'M');
+        sparkAt(el, g === 'F' ? '#f393bb' : '#8fbaff', 14);
+        setTimeout(function () { el.className = el.className.replace(/ burst/g, ''); }, 640);
+    }
+
+    function sparkAt(el, color, count) {
+        var box = el.getBoundingClientRect();
+        var cx = box.left + box.width / 2, cy = box.top + box.height / 2, i;
+        for (i = 0; i < count; i++) {
+            (function (idx) {
+                var d = document.createElement('div');
+                d.className = 'spark';
+                d.style.background = color;
+                d.style.boxShadow = '0 0 10px 2px ' + color;
+                d.style.left = (cx - 4) + 'px';
+                d.style.top = (cy - 4) + 'px';
+                document.getElementById('fx').appendChild(d);
+                var ang = (Math.PI * 2 * idx) / count + Math.random() * 0.6;
+                var dist = 32 + Math.random() * 60;
+                var dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist;
+                if (d.animate) {
+                    var anim = d.animate([
+                        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(0.2)', opacity: 0 }
+                    ], { duration: 600 + Math.random() * 260, easing: 'cubic-bezier(.15,.8,.3,1)' });
+                    anim.onfinish = function () { if (d.parentNode) d.parentNode.removeChild(d); };
+                } else {
+                    setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 560);
+                }
+            })(i);
+        }
     }
 
     // ====== SOLVER ======
     function runBacktrackSolver() {
-        // build placement order: pair partners adjacent, randomize otherwise
         var order = buildPlacementOrder();
         var seats = emptyGrid(null);
         var stepsObj = { steps: 0, max: 200000 };
@@ -1270,7 +1854,10 @@ body {
         var ok = backtrackPlace(order, 0, seats, stepsObj, prev);
         return ok ? seats : null;
     }
-
+    function cond(num) {
+        if (!applyConditions) return {};
+        return conditions[num] || {};
+    }
     function buildPlacementOrder() {
         var p = participants.slice(0);
         shuffle(p);
@@ -1279,19 +1866,16 @@ body {
             num = p[i];
             if (visited[num]) continue;
             order.push(num); visited[num] = true;
-            c = conditions[num];
-            if (c && c.mustPairWith != null && !visited[c.mustPairWith]) {
+            c = cond(num);
+            if (c.mustPairWith != null && !visited[c.mustPairWith]) {
                 order.push(c.mustPairWith);
                 visited[c.mustPairWith] = true;
             }
         }
         return order;
     }
-
     function collectPrevPairsAndSeats() {
-        var prevPairs = []; // list of [a,b] where a<b
-        var prevSeats = {}; // num -> [{r,c}]
-        var r, c, mate, a, b;
+        var prevPairs = [], prevSeats = {}, r, c, mate, a, b;
         for (r = 0; r < rows; r++) {
             for (c = 0; c < cols; c++) {
                 a = currentSeats[r][c];
@@ -1302,16 +1886,13 @@ body {
                 if (mate && mate.c > c) {
                     b = currentSeats[mate.r][mate.c];
                     if (b != null) {
-                        var lo = a < b ? a : b;
-                        var hi = a < b ? b : a;
-                        prevPairs.push([lo, hi]);
+                        prevPairs.push([a < b ? a : b, a < b ? b : a]);
                     }
                 }
             }
         }
         return { pairs: prevPairs, seats: prevSeats };
     }
-
     function backtrackPlace(order, idx, seats, stepsObj, prev) {
         stepsObj.steps++;
         if (stepsObj.steps > stepsObj.max) return false;
@@ -1331,26 +1912,20 @@ body {
         }
         return false;
     }
-
     function candidateSeatsFor(num, seats, prev) {
-        var c = conditions[num] || {};
+        var c = cond(num);
         var locked = c.mustPairWith != null;
         var cands = [];
-        var partnerPos = null;
-        if (locked) {
-            partnerPos = findStudentInGrid(seats, c.mustPairWith);
-        }
+        var partnerPos = locked ? findStudentInGrid(seats, c.mustPairWith) : null;
         if (partnerPos) {
-            // must be adjacent to partnerPos
             var mate = getMate(partnerPos.r, partnerPos.c);
             if (!mate) return cands;
             if (!enabledSeats[mate.r][mate.c]) return cands;
             if (seats[mate.r][mate.c] != null) return cands;
-            if (!seatPassesPlacementFilters(num, mate, prev, /*ignoreAllowed*/ true)) return cands;
+            if (!seatPassesPlacementFilters(num, mate, prev, true)) return cands;
             cands.push(mate);
             return cands;
         }
-        // not yet placed (or not locked): try all empty enabled seats
         var r, cc;
         for (r = 0; r < rows; r++) {
             for (cc = 0; cc < cols; cc++) {
@@ -1358,7 +1933,6 @@ body {
                 if (seats[r][cc] != null) continue;
                 if (!seatPassesPlacementFilters(num, { r: r, c: cc }, prev, locked)) continue;
                 if (locked) {
-                    // need an adjacent empty enabled seat for partner
                     var m = getMate(r, cc);
                     if (!m) continue;
                     if (!enabledSeats[m.r][m.c]) continue;
@@ -1369,9 +1943,8 @@ body {
         }
         return cands;
     }
-
     function seatPassesPlacementFilters(num, pos, prev, ignoreAllowed) {
-        var c = conditions[num] || {};
+        var c = cond(num);
         if (!ignoreAllowed && c.allowedSeats && c.allowedSeats.length > 0 && c.mustPairWith == null) {
             var ok = false, k;
             for (k = 0; k < c.allowedSeats.length; k++) {
@@ -1387,20 +1960,15 @@ body {
         }
         return true;
     }
-
     function checkPlacementConstraints(num, pos, seats, prev) {
-        // check: if mate is placed, pair-related constraints must hold
         var mate = getMate(pos.r, pos.c);
         if (!mate) return true;
         if (!enabledSeats[mate.r][mate.c]) return true;
         var partner = seats[mate.r][mate.c];
         if (partner == null) return true;
-        var c1 = conditions[num] || {};
-        var c2 = conditions[partner] || {};
-        // mustPairWith consistency
+        var c1 = cond(num), c2 = cond(partner);
         if (c1.mustPairWith != null && c1.mustPairWith !== partner) return false;
         if (c2.mustPairWith != null && c2.mustPairWith !== num) return false;
-        // gender constraints (skip if locked by mustPair)
         if (c1.mustPairWith == null && c1.pairGender) {
             var pg = students[partner] ? students[partner].gender : 'M';
             if (pg !== c1.pairGender) return false;
@@ -1409,7 +1977,6 @@ body {
             var ng = students[num] ? students[num].gender : 'M';
             if (ng !== c2.pairGender) return false;
         }
-        // no same pair
         if (randomOptions.noSamePair) {
             var lo = num < partner ? num : partner;
             var hi = num < partner ? partner : num;
@@ -1420,117 +1987,19 @@ body {
         }
         return true;
     }
-
     function findStudentInGrid(grid, num) {
         var r, c;
-        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
-            if (grid[r][c] === num) return { r: r, c: c };
-        }
+        for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) if (grid[r][c] === num) return { r: r, c: c };
         return null;
-    }
-
-    // ====== SEAT BOARD HTML ======
-    function renderSeatBoardHtml(id, opts) {
-        // opts.mode: 'enable' | 'allowed' | 'currentSeats' | 'view'
-        // for 'allowed', opts.num is the student
-        var html = '<div class="seatBoard" id="' + id + '">';
-        var r, c, cellHtml, cellClass, cellLabel, mini = !!opts.mini;
-        for (r = 0; r < rows; r++) {
-            html += '<div class="seatRow">';
-            for (c = 0; c < cols; c++) {
-                var enabled = enabledSeats[r][c];
-                cellClass = 'seatCell';
-                if (mini) cellClass += ' miniCell';
-                cellLabel = '';
-                if (opts.mode === 'enable') {
-                    if (enabled) cellClass += ' empty'; else cellClass += ' disabled';
-                    cellLabel = enabled ? '' : '×';
-                } else if (opts.mode === 'allowed') {
-                    if (!enabled) {
-                        cellClass += ' disabled';
-                        cellLabel = '';
-                    } else {
-                        var allowedList = (conditions[opts.num] && conditions[opts.num].allowedSeats) || [];
-                        var isAllowed = false, k;
-                        for (k = 0; k < allowedList.length; k++) {
-                            if (allowedList[k].r === r && allowedList[k].c === c) { isAllowed = true; break; }
-                        }
-                        if (allowedList.length === 0) cellClass += ' empty';
-                        else if (isAllowed) cellClass += ' allowed';
-                        else cellClass += ' empty';
-                        cellLabel = '';
-                    }
-                } else if (opts.mode === 'currentSeats') {
-                    if (!enabled) {
-                        cellClass += ' disabled';
-                    } else {
-                        var sn = currentSeats[r][c];
-                        if (sn == null) {
-                            cellClass += ' empty';
-                            cellLabel = '';
-                        } else {
-                            cellClass += ' filled' + genderTag((students[sn] || {}).gender || 'M');
-                            cellLabel = escapeHtml(getStudentShort(sn));
-                            if (selectedSeatRC && selectedSeatRC.r === r && selectedSeatRC.c === c) cellClass += ' selected';
-                        }
-                    }
-                } else if (opts.mode === 'view') {
-                    if (!enabled) {
-                        cellClass += ' disabled';
-                    } else {
-                        var vn = (opts.useCurrent ? currentSeats[r][c] : newSeats[r][c]);
-                        if (vn == null) {
-                            cellClass += ' empty';
-                            cellLabel = '';
-                        } else {
-                            cellClass += ' filled' + genderTag((students[vn] || {}).gender || 'M');
-                            if (!opts.useCurrent && viewSelectedRC && viewSelectedRC.r === r && viewSelectedRC.c === c) cellClass += ' selected';
-                            var sObj = students[vn] || {};
-                            var nm = sObj.name || '';
-                            if (nm === '') {
-                                cellLabel = '<span class="cellName">' + vn + '번</span>';
-                            } else {
-                                cellLabel = '<span class="cellNum">' + vn + '</span><span class="cellName">' + escapeHtml(nm) + '</span>';
-                            }
-                        }
-                    }
-                }
-                cellHtml = '<button class="' + cellClass + '" data-r="' + r + '" data-c="' + c + '">' + cellLabel + '</button>';
-                html += cellHtml;
-                // visual gap after odd col (between desk pairs)
-                if (c % 2 === 1 && c < cols - 1) html += '<span class="deskGap"></span>';
-            }
-            html += '</div>';
-        }
-        html += '</div>';
-        return html;
-    }
-
-    function attachSeatBoardClicks(boardId, handler) {
-        var board = document.getElementById(boardId);
-        if (!board) return;
-        var cells = board.getElementsByClassName('seatCell'), i;
-        for (i = 0; i < cells.length; i++) {
-            (function (cell) {
-                var r = parseInt(cell.getAttribute('data-r'), 10);
-                var c = parseInt(cell.getAttribute('data-c'), 10);
-                cell.onclick = function () { handler(r, c); };
-            })(cells[i]);
-        }
     }
 
     // ====== SAVE / LOAD ======
     function openLoadDialog(inputId) {
         var fi = document.getElementById(inputId);
-        if (!fi) { alert('불러오기 입력창을 찾지 못했습니다.'); return; }
+        if (!fi) return;
         fi.value = '';
-        fi.onchange = function () {
-            if (fi.value && fi.files && fi.files[0]) loadFromSelectedFile(inputId);
-        };
-        if (fi.click) fi.click();
-        else alert('이 브라우저에서는 버튼으로 파일 선택 창을 열 수 없습니다.');
+        fi.click();
     }
-
     function saveToFile() {
         var lines = [], i, r, c, num, s, content, blob, url, a, k, p;
         for (i = 0; i < 100; i++) lines.push('.');
@@ -1538,21 +2007,18 @@ body {
         lines.push('META;COLS;' + cols);
         lines.push('META;COUNT;' + studentCount);
         lines.push('META;ABSENT;"' + getAbsentText() + '"');
-        // disabled seats
         var disabledList = [];
         for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) if (!enabledSeats[r][c]) disabledList.push(r + ',' + c);
         lines.push('META;DISABLED;"' + disabledList.join(';') + '"');
-        // students
         for (i = 0; i < participants.length; i++) {
             num = participants[i];
             s = students[num] || { name: '', gender: 'M' };
             lines.push('S;' + num + ';"' + escapeTextName(s.name || '') + '";' + (s.gender || 'M'));
         }
-        // placements (newSeats)
+        var out = hasResult ? newSeats : currentSeats;
         for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
-            if (newSeats[r] && newSeats[r][c] != null) lines.push('P;' + r + ';' + c + ';' + newSeats[r][c]);
+            if (out[r] && out[r][c] != null) lines.push('P;' + r + ';' + c + ';' + out[r][c]);
         }
-        // conditions
         for (i = 0; i < participants.length; i++) {
             num = participants[i];
             var cd = conditions[num];
@@ -1571,9 +2037,7 @@ body {
         content = lines.join('\r\n');
         if (window.Blob) {
             blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            if (window.navigator && window.navigator.msSaveBlob) {
-                window.navigator.msSaveBlob(blob, 'seat_save.txt'); return;
-            }
+            if (window.navigator && window.navigator.msSaveBlob) { window.navigator.msSaveBlob(blob, 'seat_save.txt'); return; }
             if (window.URL && window.URL.createObjectURL) {
                 url = window.URL.createObjectURL(blob);
                 a = document.createElement('a');
@@ -1581,7 +2045,7 @@ body {
                 document.body.appendChild(a);
                 if (a.click) a.click(); else window.location.href = url;
                 setTimeout(function () {
-                    document.body.removeChild(a);
+                    if (a.parentNode) a.parentNode.removeChild(a);
                     window.URL.revokeObjectURL(url);
                 }, 100);
                 return;
@@ -1590,20 +2054,19 @@ body {
         alert('이 브라우저에서는 저장 기능을 지원하지 않습니다.');
     }
 
-    function loadFromSelectedFile(inputId) {
+    function loadFromSelectedFile(inputId, studentsOnly) {
         var fi = document.getElementById(inputId), file, reader;
-        if (!fi || !fi.value || !fi.files || !fi.files[0]) {
-            alert('불러올 txt 파일을 먼저 선택해 주세요.'); return;
-        }
+        if (!fi || !fi.files || !fi.files[0]) { alert('불러올 txt 파일을 먼저 선택해 주세요.'); return; }
         file = fi.files[0];
         if (!window.FileReader) { alert('이 브라우저에서는 불러오기 기능을 지원하지 않습니다.'); return; }
         reader = new FileReader();
         reader.onload = function (e) {
             var text = e && e.target ? e.target.result : reader.result;
-            if (parseLoadedText(text)) {
-                state = 'random';
-                hasResult = true;
-                viewSelectedRC = null;
+            if (parseLoadedText(text, studentsOnly)) {
+                condEditNum = null; checkedRows = {};
+                viewSelectedRC = null; selectedBankNum = null; selectedSeatRC = null;
+                if (studentsOnly) { view = 'students.list'; }
+                else { view = 'seats.random'; hasResult = true; }
                 render();
             }
         };
@@ -1611,7 +2074,7 @@ body {
         reader.readAsText(file, 'utf-8');
     }
 
-    function parseLoadedText(text) {
+    function parseLoadedText(text, studentsOnly) {
         var normalized = String(text).replace(/\r/g, '');
         var lines = normalized.split('\n');
         var metaRows = null, metaCols = null, metaCount = null, metaAbsent = null, metaDisabled = null;
@@ -1633,10 +2096,7 @@ body {
                 continue;
             }
             m = line.match(/^P\s*;\s*(\d+)\s*;\s*(\d+)\s*;\s*(\d+)\s*$/i);
-            if (m) {
-                placements.push({ r: parseInt(m[1], 10), c: parseInt(m[2], 10), num: parseInt(m[3], 10) });
-                continue;
-            }
+            if (m) { placements.push({ r: parseInt(m[1], 10), c: parseInt(m[2], 10), num: parseInt(m[3], 10) }); continue; }
             m = line.match(/^CF\s*;\s*(\d+)\s*;\s*(\d+)\s*$/i);
             if (m) { condF[parseInt(m[1], 10)] = parseInt(m[2], 10); continue; }
             m = line.match(/^CG\s*;\s*(\d+)\s*;\s*([MF])\s*$/i);
@@ -1653,29 +2113,34 @@ body {
                 continue;
             }
         }
-        if (metaRows == null || metaCols == null || metaCount == null) {
+        if (metaCount == null || (!studentsOnly && (metaRows == null || metaCols == null))) {
             alert('저장 파일에서 기본 정보를 확인할 수 없습니다.'); return false;
         }
-        if (metaRows < 1 || metaCols < 1 || metaCount < 1) {
+        if (metaCount < 1 || (!studentsOnly && (metaRows < 1 || metaCols < 1))) {
             alert('저장 파일의 값이 올바르지 않습니다.'); return false;
         }
         parsedAbs = parseAbsentList(metaAbsent || '', metaCount);
         if (parsedAbs === null) { alert('저장 파일의 결번 정보가 올바르지 않습니다.'); return false; }
 
-        rows = metaRows; cols = metaCols; studentCount = metaCount; absentNumbers = parsedAbs;
+        if (!studentsOnly) {
+            rows = metaRows; cols = metaCols;
+        }
+        studentCount = metaCount;
+        absentNumbers = parsedAbs;
         buildParticipants();
         if (participants.length < 1) { alert('저장 파일의 참여 인원이 부족합니다.'); return false; }
 
-        // disabled seats
-        enabledSeats = emptyGrid(true);
-        if (metaDisabled) {
-            parts = metaDisabled.split(';');
-            for (k = 0; k < parts.length; k++) {
-                if (parts[k] === '') continue;
-                var dpp = parts[k].split(',');
-                if (dpp.length === 2) {
-                    rr = parseInt(dpp[0], 10); cc = parseInt(dpp[1], 10);
-                    if (rr >= 0 && rr < rows && cc >= 0 && cc < cols) enabledSeats[rr][cc] = false;
+        if (!studentsOnly) {
+            enabledSeats = emptyGrid(true);
+            if (metaDisabled) {
+                parts = metaDisabled.split(';');
+                for (k = 0; k < parts.length; k++) {
+                    if (parts[k] === '') continue;
+                    var dpp = parts[k].split(',');
+                    if (dpp.length === 2) {
+                        rr = parseInt(dpp[0], 10); cc = parseInt(dpp[1], 10);
+                        if (rr >= 0 && rr < rows && cc >= 0 && cc < cols) enabledSeats[rr][cc] = false;
+                    }
                 }
             }
         }
@@ -1684,21 +2149,28 @@ body {
         for (i = 0; i < participants.length; i++) {
             num = participants[i];
             var ls = loadedStudents[num];
-            if (ls) {
-                students[num] = { name: ls.name || '', gender: ls.gender === 'F' ? 'F' : 'M' };
-            } else {
-                students[num] = { name: '', gender: 'M' };
-            }
+            students[num] = ls
+                ? { name: ls.name || '', gender: ls.gender === 'F' ? 'F' : 'M' }
+                : { name: '', gender: 'M' };
         }
 
-        currentSeats = emptyGrid(null);
-        newSeats = emptyGrid(null);
-        for (i = 0; i < placements.length; i++) {
-            var p = placements[i];
-            if (p.r < 0 || p.r >= rows || p.c < 0 || p.c >= cols) continue;
-            if (!enabledSeats[p.r][p.c]) continue;
-            if (participants.indexOf(p.num) < 0) continue;
-            newSeats[p.r][p.c] = p.num;
+        if (!studentsOnly) {
+            currentSeats = emptyGrid(null);
+            newSeats = emptyGrid(null);
+            for (i = 0; i < placements.length; i++) {
+                var p2 = placements[i];
+                if (p2.r < 0 || p2.r >= rows || p2.c < 0 || p2.c >= cols) continue;
+                if (!enabledSeats[p2.r][p2.c]) continue;
+                if (participants.indexOf(p2.num) < 0) continue;
+                newSeats[p2.r][p2.c] = p2.num;
+                currentSeats[p2.r][p2.c] = p2.num;
+            }
+        } else {
+            // keep grid, just drop anyone no longer on the roster
+            for (rr = 0; rr < rows; rr++) for (cc = 0; cc < cols; cc++) {
+                if (currentSeats[rr][cc] != null && participants.indexOf(currentSeats[rr][cc]) < 0) currentSeats[rr][cc] = null;
+                if (newSeats[rr][cc] != null && participants.indexOf(newSeats[rr][cc]) < 0) newSeats[rr][cc] = null;
+            }
         }
 
         conditions = {};
@@ -1710,7 +2182,6 @@ body {
                 allowedSeats: condS[num] || []
             };
         }
-        // sanitize
         sanitizeConditionsAgainstGrid();
         return true;
     }
@@ -1723,8 +2194,14 @@ body {
         students = {};
         conditions = {};
         buildParticipants();
-        resetSeatsToSize();
-        setupIndex = 0;
+        enabledSeats = emptyGrid(true);
+        currentSeats = emptyGrid(null);
+        newSeats = emptyGrid(null);
+        var i, num;
+        for (i = 0; i < participants.length; i++) {
+            num = participants[i];
+            students[num] = { name: '', gender: 'M' };
+        }
         hasResult = false;
     }
 
