@@ -5074,7 +5074,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             html += '<div class="sharePanel">';
             html += renderShareQr();
             html += '<div class="shareInfo">';
-            html += '<div class="shareLbl">' + (shareShort ? '단축 링크' : '공유 링크') + ' · 1시간 유효</div>';
+            html += '<div class="shareLbl">' + (shareShort ? '단축 링크' : '공유 링크') + ' (1시간 유효)</div>';
             html += '<input id="shareUrlBox" class="txtbox shareBox" type="text" readonly value="' + escapeHtml(shareUrl) + '">';
             html += '<div><button id="copyShareBtn" class="btn tiny">링크 복사</button>';
             if (shareShort) html += ' <button id="fullShareBtn" class="btn tiny">원본 링크</button>';
