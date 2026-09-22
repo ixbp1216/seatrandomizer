@@ -710,6 +710,30 @@ input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: 
 .shareBox { width: 320px; max-width: 60vw; margin-left: 0; }
 @media (max-width: 620px) { .shareBox { width: 100%; max-width: 100%; } }
 
+
+/* ============ PRINT ============ */
+#printArea { display: none; }
+@media print {
+    html, body {
+        background: #ffffff !important;
+        background-image: none !important;
+        height: auto !important;
+    }
+    body > *:not(#printArea):not(#pageRule) { display: none !important; }
+    /* the screen gradient lives on a fixed pseudo-element, which body > * does not reach */
+    body::before, body::after { display: none !important; content: none !important; }
+    #printArea {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    #printImg { display: block; width: auto; height: auto; }
+}
+
 /* ============ MOBILE ============ */
 @media (max-width: 860px) {
     .shell { flex-direction: column; }
@@ -793,6 +817,8 @@ input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: 
 <main id="app" class="main"></main>
 </div>
 <div id="fx"></div>
+<div id="printArea" aria-hidden="true"><img id="printImg" alt=""></div>
+<style id="pageRule"></style>
 <script type="text/javascript">
 //---------------------------------------------------------------------
 //
@@ -3231,7 +3257,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
 
     var GROUPS = [
         { id: 'class', label: '반 설정', subs: [
-            { id: 'class.size', label: '행/열 · 끝번호' },
+            { id: 'class.size', label: '행/열, 끝번호' },
             { id: 'class.seatuse', label: '자리 사용 설정' }
         ] },
         { id: 'students', label: '학생 관리', subs: [
@@ -3676,6 +3702,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         else if (view === 'seats.current') renderCurrentSeats(app);
         else if (view === 'seats.random') renderRandom(app);
         else renderPrintSheet(app);
+        schedulePrintRefresh();
     }
 
     // ====== SEAT BOARD ======
@@ -3757,8 +3784,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     function boardWithChalk(id, opts, withFlip) {
         var h = '<div class="boardWrap">';
         if (withFlip) {
-            h += '<div class="flipRow"><button id="flipBtn" class="btn tiny">뒤집기 · ' +
-                (viewFlipped ? '선생님 시점' : '학생 시점') + '</button></div>';
+            h += '<div class="flipRow"><button id="flipBtn" class="btn tiny">뒤집기 (' +
+                (viewFlipped ? '선생님 시점' : '학생 시점') + ')</button></div>';
         }
         if (!viewFlipped) h += '<div class="chalkRow"><span class="chalk">칠판</span></div>';
         h += '<div class="boardRow">' + renderSeatBoardHtml(id, opts) + '</div>';
@@ -3787,11 +3814,11 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         };
     }
 
-    // ====== VIEW: 반 설정 > 행/열 · 끝번호 ======
+    // ====== VIEW: 반 설정 > 행/열, 끝번호 ======
     function renderClassSize(app) {
         var html = '';
         html += '<div class="panel">';
-        html += '<div class="title">행/열 · 끝번호</div>';
+        html += '<div class="title">행/열, 끝번호</div>';
         html += '<div class="split"><div class="splitL">';
         html += '<div class="field"><label class="fieldLabel" for="classInput">반 이름</label>';
         html += '<input id="classInput" class="inputbox" type="text" maxlength="24" value="' + escapeHtml(className) + '" placeholder="예: 1-1"></div>';
@@ -3900,8 +3927,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var html = '';
         html += '<div class="panel">';
         html += '<div class="title">자리 사용 설정</div>';
-        html += '<div class="hintline">칸을 눌러 사용 여부를 바꿉니다 · 사용 ' + countEnabled() + ' / 학생 ' + participants.length +
-            (tripleDesk ? ' · 3인 책상 ' + (tripleDesk.r + 1) + '행' : '') + '</div>';
+        html += '<div class="hintline">칸을 눌러 사용 여부를 바꿉니다 (사용 ' + countEnabled() + ' / 학생 ' + participants.length +
+            (tripleDesk ? ', 3인 책상 ' + (tripleDesk.r + 1) + '행' : '') + ')</div>';
         html += boardWithChalk('useBoard', { mode: 'seatuse' }, true);
         html += '<div class="controls">';
         html += '<button id="allOnBtn" class="btn">전체 사용</button>';
@@ -4109,7 +4136,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         }
         html += '</tbody></table></div>';
         html += '<div class="controls"><button id="doneStu" class="btn sm">완료</button></div>';
-        html += '<div class="hintline" style="margin:12px 0 0;">Enter 다음 번호 · Shift+Enter 이전 번호</div>';
+        html += '<div class="hintline" style="margin:12px 0 0;">Enter로 다음 번호 (Shift+Enter는 이전 번호)</div>';
         html += '</div>';
         app.innerHTML = html;
 
@@ -4493,7 +4520,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         html += '<button id="loadBtn2" class="btn sm">불러오기</button>';
         html += '</div>';
         html += '<div class="hintline" style="margin:14px 0 0;">Shift+배치로 추첨 연출' +
-            (condOnCtrl ? ' · Ctrl+배치로 조건 적용' : '') + '</div>';
+            (condOnCtrl ? ' (Ctrl+배치는 조건 적용)' : '') + '</div>';
         html += '</div>';
         app.innerHTML = html;
 
@@ -4970,7 +4997,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var bs = boardPixelSize();
         return {
             paper: 'land',
-            theme: 'dark',
+            theme: 'light',
             deskSide: 'bottom',
             label: '이름',
             cellFont: 17,
@@ -5015,18 +5042,18 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     var THEMES = {
         dark:  { bg: '#20242a', panel: '#171a1f', line: '#3b4350', text: '#ffffff',
                  sub: '#9aa5b4', m: '#3f7ff0', f: '#e35d95', off: '#2a2f37' },
-        light: { bg: '#f4f6fa', panel: '#e7ebf2', line: '#c3cbd7', text: '#141922',
-                 sub: '#5c6673', m: '#3f7ff0', f: '#e35d95', off: '#d8dee7' },
+        light: { bg: '#ffffff', panel: '#f1f3f6', line: '#c3cbd7', text: '#141922',
+                 sub: '#5c6673', m: '#3f7ff0', f: '#e35d95', off: '#e3e7ed' },
         paper: { bg: '#ffffff', panel: '#ffffff', line: '#333a44', text: '#000000',
                  sub: '#444c58', m: '#ffffff', f: '#ffffff', off: '#f0f0f0' }
     };
-    var THEME_ORDER = ['dark', 'light', 'paper'];
+    var THEME_ORDER = ['light', 'paper', 'dark'];
     function faintColor(th) { return th.sub; }
 
     // ====== VIEW: 출력 ======
     function renderPrintSheet(app) {
         ensureSheet();
-        var th = THEMES[sheet.theme] || THEMES.dark;
+        var th = THEMES[sheet.theme] || THEMES.light;
         var html = '';
         html += '<div class="panel wide">';
         html += '<div class="title">자리배치표 출력</div>';
@@ -5082,7 +5109,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             if (!shareShort) {
                 html += '<div class="hintdim">' + (shareConfigured()
                     ? '서버 저장에 실패해 전체 링크를 씁니다 (' + shareUrl.length + '자)'
-                    : '공유 서버 미설정 · 전체 링크를 씁니다 (' + shareUrl.length + '자)') + '</div>';
+                    : '공유 서버가 설정되지 않아 전체 링크를 씁니다 (' + shareUrl.length + '자)') + '</div>';
             }
             html += '</div></div>';
         }
@@ -5174,8 +5201,9 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     function repaintSheet() {
         var outer = document.getElementById('sheetOuter');
         if (!outer) return;
-        outer.innerHTML = renderSheetInner(THEMES[sheet.theme] || THEMES.dark);
+        outer.innerHTML = renderSheetInner(THEMES[sheet.theme] || THEMES.light);
         bindSheetDrag();
+        schedulePrintRefresh();
     }
 
     function toolBtn(id, title, svg) {
@@ -5379,7 +5407,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     }
     function renderSheetToCanvas(scale) {
         ensureSheet();
-        var th = THEMES[sheet.theme] || THEMES.dark;
+        var th = THEMES[sheet.theme] || THEMES.light;
         var cv = document.createElement('canvas');
         cv.width = Math.round(SHEET_W * scale);
         cv.height = Math.round(SHEET_H * scale);
@@ -5482,7 +5510,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             var out = document.createElement('canvas');
             out.width = cv.width; out.height = cv.height;
             var g = out.getContext('2d');
-            g.fillStyle = (THEMES[sheet.theme] || THEMES.dark).bg;
+            g.fillStyle = (THEMES[sheet.theme] || THEMES.light).bg;
             g.fillRect(0, 0, out.width, out.height);
             g.drawImage(cv, 0, 0);
             downloadBlob(new Blob([dataUrlToBytes(out.toDataURL('image/jpeg', 0.94))], { type: 'image/jpeg' }), sheetFileName('jpg'));
@@ -5497,7 +5525,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var tmp = document.createElement('canvas');
         tmp.width = cv.width; tmp.height = cv.height;
         var g = tmp.getContext('2d');
-        g.fillStyle = (THEMES[sheet.theme] || THEMES.dark).bg;
+        g.fillStyle = (THEMES[sheet.theme] || THEMES.light).bg;
         g.fillRect(0, 0, tmp.width, tmp.height);
         g.drawImage(cv, 0, 0);
         var jpg = dataUrlToBytes(tmp.toDataURL('image/jpeg', 0.94));
@@ -5616,7 +5644,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var tmp = document.createElement('canvas');
         tmp.width = cv.width; tmp.height = cv.height;
         var g = tmp.getContext('2d');
-        g.fillStyle = (THEMES[sheet.theme] || THEMES.dark).bg;
+        g.fillStyle = (THEMES[sheet.theme] || THEMES.light).bg;
         g.fillRect(0, 0, tmp.width, tmp.height);
         g.drawImage(cv, 0, 0);
         var png = dataUrlToBytes(cv.toDataURL('image/png'));
@@ -5678,20 +5706,77 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     }
 
     // ---- print: opens the browser dialog with just the sheet on the page ----
-    function doPrint() {
-        var cv = renderSheetToCanvas(2);
-        var w = window.open('', '_blank');
-        if (!w) { alert('팝업이 차단되어 인쇄 창을 열 수 없습니다.'); return; }
-        w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
-            escapeHtml(sheetTitleText()) + '</title><style>' +
-            '@page{size:A4 landscape;margin:8mm}' +
-            'html,body{margin:0;padding:0;background:#fff}' +
-            'img{width:100%;height:auto;display:block}' +
-            '</style></head><body><img src="' + cv.toDataURL('image/png') + '"></body></html>');
-        w.document.close();
-        w.onload = function () { w.focus(); w.print(); };
-        setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 500);
+    // ---- print: same page as Ctrl+P, sheet only, fitted to one A4 page ----
+    // The image is capped by BOTH width and height, so it can never spill onto a
+    // second page whatever the margins turn out to be.
+    var PRINT_MARGIN_MM = 10;
+    var printTimer = null, printObjUrl = null;
+    function printBox() {
+        var port = (ensureSheet().paper === 'port');
+        var pw = port ? 210 : 297, ph = port ? 297 : 210;
+        return {
+            port: port,
+            w: pw - PRINT_MARGIN_MM * 2,
+            h: ph - PRINT_MARGIN_MM * 2 - 2          // 2mm headroom against rounding
+        };
     }
+    function updatePageRule() {
+        var el = document.getElementById('pageRule');
+        if (!el) return;
+        var bx = printBox();
+        el.textContent =
+            '@page { size: A4 ' + (bx.port ? 'portrait' : 'landscape') + '; margin: ' + PRINT_MARGIN_MM + 'mm; }' +
+            '@media print { #printArea { height: ' + bx.h + 'mm; }' +
+            ' #printImg { max-width: ' + bx.w + 'mm; max-height: ' + bx.h + 'mm; } }';
+    }
+    function setPrintImage(url, isObjectUrl, cb) {
+        var img = document.getElementById('printImg');
+        if (!img) { if (cb) cb(); return; }
+        var called = false;
+        function go() { if (called) return; called = true; if (cb) cb(); }
+        img.onload = go;
+        img.onerror = go;
+        if (printObjUrl) { try { URL.revokeObjectURL(printObjUrl); } catch (e) {} }
+        printObjUrl = isObjectUrl ? url : null;
+        img.src = url;
+        setTimeout(go, 2500);
+    }
+    // Keep the print copy current in the background so Ctrl+P also prints the latest sheet.
+    function refreshPrintImage(cb) {
+        updatePageRule();
+        var cv;
+        try { cv = renderSheetToCanvas(2); } catch (e) { if (cb) cb(); return; }
+        if (cv.toBlob && window.URL && URL.createObjectURL) {
+            cv.toBlob(function (blob) {
+                if (blob) setPrintImage(URL.createObjectURL(blob), true, cb);
+                else setPrintImage(cv.toDataURL('image/png'), false, cb);
+            }, 'image/png');
+        } else {
+            setPrintImage(cv.toDataURL('image/png'), false, cb);
+        }
+    }
+    function schedulePrintRefresh() {
+        if (printTimer) clearTimeout(printTimer);
+        printTimer = setTimeout(function () { printTimer = null; refreshPrintImage(null); }, 400);
+    }
+    var printing = false;
+    function doPrint() {
+        if (printing) return;
+        printing = true;
+        if (printTimer) { clearTimeout(printTimer); printTimer = null; }
+        refreshPrintImage(function () {
+            printing = false;
+            window.print();
+        });
+    }
+    // Ctrl+P straight after an edit: make sure the page size and image are not stale.
+    window.addEventListener('beforeprint', function () {
+        updatePageRule();
+        if (printTimer) {
+            clearTimeout(printTimer); printTimer = null;
+            try { setPrintImage(renderSheetToCanvas(2).toDataURL('image/png'), false, null); } catch (e) {}
+        }
+    });
 
     // ---- format save / load (layout only, seating comes from the app) ----
     function formatPayload() {
@@ -5703,7 +5788,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         if (!o || !o.els) return false;
         sheet = {
             paper: o.paper === 'port' ? 'port' : 'land',
-            theme: THEMES[o.theme] ? o.theme : 'dark',
+            theme: THEMES[o.theme] ? o.theme : 'light',
             deskSide: o.deskSide || 'bottom',
             label: o.label || '이름',
             cellFont: o.cellFont || 17,
@@ -6029,7 +6114,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         if (metaName != null) className = metaName;
         if (!studentsOnly) {
             rows = metaRows; cols = metaCols;
-            tripleDesk = (metaTriple && metaTriple.r < metaRows && metaTriple.c + 2 < metaCols) ? metaTriple : null;
+            tripleDesk = (metaTriple && metaTriple.r < metaRows && metaTriple.c % 2 === 0 && metaTriple.c + 1 < metaCols) ? metaTriple : null;
         }
         studentCount = metaCount;
         absentNumbers = parsedAbs;
@@ -6065,7 +6150,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             newSeats = emptyGrid(null);
             for (i = 0; i < placements.length; i++) {
                 var p2 = placements[i];
-                if (p2.r < 0 || p2.r >= rows || p2.c < 0 || p2.c >= cols) continue;
+                if (p2.r < 0 || p2.r >= rows || p2.c < 0 || p2.c >= NC()) continue;
                 if (!enabledSeats[p2.r][p2.c]) continue;
                 if (participants.indexOf(p2.num) < 0) continue;
                 newSeats[p2.r][p2.c] = p2.num;
