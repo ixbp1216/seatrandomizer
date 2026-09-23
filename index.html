@@ -696,6 +696,18 @@ input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: 
 .sCell { flex-direction: column; }
 .sLine { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.18; }
 .sNote { opacity: .85; }
+.sSeat { cursor: text; }
+.sLine.noteEdit {
+    outline: 2px solid rgba(120,175,255,.95);
+    outline-offset: 1px;
+    min-width: 34px;
+    opacity: 1;
+    cursor: text;
+    user-select: text;
+    -webkit-user-select: text;
+    caret-color: #4183fb;
+}
+.sLine.noteEdit:empty::before { content: '노트'; opacity: .45; }
 .sheetBar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
 @media (max-width: 860px) {
     .sheetArea { gap: 8px; }
@@ -3564,6 +3576,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     function setView(v) { view = v; navOpen = v.split('.')[0]; }
     function goView(v) {
         if (revealing) return;
+        if (editingSeat) commitSeatNote();
         if (editingEl) { var ed = editingEl; editingEl = null; ed.text = trim(ed.text || ''); if (!ed.text) {
             var k; for (k = 0; k < sheet.els.length; k++) if (sheet.els[k] === ed) { sheet.els.splice(k, 1); break; } } }
         commitSizeInputs(true);
@@ -3904,7 +3917,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         html += '<div class="title">학생 보기</div>';
         html += '<div class="tableWrap"><table class="stable"><thead><tr>';
         html += '<th class="colChk"><input type="checkbox" id="chkAll"></th>';
-        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colNote">노트</th><th class="colCond">조건</th>';
+        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colCond">조건</th>';
         html += '</tr></thead><tbody>';
         var n, s, absent;
         for (n = 1; n <= studentCount; n++) {
@@ -3914,11 +3927,10 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             html += '<td class="colChk"><input type="checkbox" class="rowChk" data-n="' + n + '"' + (checkedRows[n] ? ' checked' : '') + '></td>';
             html += '<td class="colNum">' + n + '</td>';
             if (absent) {
-                html += '<td>-</td><td class="colGen">-</td><td class="colNote">-</td><td class="colCond">-</td>';
+                html += '<td>-</td><td class="colGen">-</td><td class="colCond">-</td>';
             } else {
                 html += '<td>' + (s.name ? escapeHtml(s.name) : '<span style="color:#66707e">이름 없음</span>') + '</td>';
                 html += '<td class="colGen ' + (s.gender === 'F' ? 'gTagF' : 'gTagM') + '">' + (s.gender === 'F' ? '여' : '남') + '</td>';
-                html += '<td class="colNote">' + (s.note ? escapeHtml(s.note) : '<span style="color:#66707e">-</span>') + '</td>';
                 html += '<td class="colCond"><button class="btn tiny ' + (hasAnyCondition(n) ? 'orange' : 'primary') + '" data-cond="' + n + '">' +
                     (hasAnyCondition(n) ? '수정' : '설정') + '</button></td>';
             }
@@ -4006,7 +4018,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         html += '<div class="title">학생 수정</div>';
         html += '<div class="tableWrap"><table class="stable"><thead><tr>';
         html += '<th class="colChk">결번</th>';
-        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colNote">노트</th><th class="colCond">조건</th>';
+        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colCond">조건</th>';
         html += '</tr></thead><tbody>';
         var n, sObj, absent;
         for (n = 1; n <= studentCount; n++) {
@@ -4019,8 +4031,6 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 escapeHtml(sObj.name || '') + '" placeholder="이름"' + (absent ? ' disabled' : '') + '></td>';
             html += '<td class="colGen"><button class="genBtn' + (sObj.gender === 'F' ? ' f' : '') + '" data-gen="' + n + '"' +
                 (absent ? ' disabled' : '') + '>' + (sObj.gender === 'F' ? '여' : '남') + '</button></td>';
-            html += '<td class="colNote"><input class="cellInput noteInput" type="text" maxlength="12" data-note="' + n +
-                '" value="' + escapeHtml(sObj.note || '') + '" placeholder="예: 반장"' + (absent ? ' disabled' : '') + '></td>';
             if (absent) {
                 html += '<td class="colCond">-</td>';
             } else {
@@ -4040,22 +4050,18 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         body.oninput = function (ev) {
             var el = ev.target;
             if (!el.getAttribute) return;
-            var fld = el.getAttribute('data-name') !== null ? 'name' :
-                      (el.getAttribute('data-note') !== null ? 'note' : '');
-            if (!fld) return;
-            var num = parseInt(el.getAttribute('data-' + fld), 10);
+            if (el.getAttribute('data-name') === null) return;
+            var num = parseInt(el.getAttribute('data-name'), 10);
             if (!students[num]) students[num] = { name: '', gender: 'M' };
-            students[num][fld] = trim(el.value);
+            students[num].name = trim(el.value);
         };
         body.onkeydown = function (ev) {
             if (ev.keyCode !== 13) return;
             var el = ev.target;
             if (!el.getAttribute) return;
-            var fld = el.getAttribute('data-name') !== null ? 'name' :
-                      (el.getAttribute('data-note') !== null ? 'note' : '');
-            if (!fld) return;
+            if (el.getAttribute('data-name') === null) return;
             ev.preventDefault();
-            focusField(fld, parseInt(el.getAttribute('data-' + fld), 10), ev.shiftKey ? -1 : 1);
+            focusNameField(parseInt(el.getAttribute('data-name'), 10), ev.shiftKey ? -1 : 1);
         };
         body.onchange = function (ev) {
             var el = ev.target;
@@ -4127,13 +4133,6 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             num = parseInt(els[i].getAttribute('data-name'), 10);
             if (!students[num]) students[num] = { name: '', gender: 'M' };
             students[num].name = trim(els[i].value);
-        }
-        var ns = document.querySelectorAll('[data-note]');
-        for (i = 0; i < ns.length; i++) {
-            if (ns[i].disabled) continue;
-            num = parseInt(ns[i].getAttribute('data-note'), 10);
-            if (!students[num]) students[num] = { name: '', gender: 'M' };
-            students[num].note = trim(ns[i].value);
         }
     }
 
@@ -4249,7 +4248,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
 
         attachFlip();
         document.getElementById('clearBtn').onclick = function () {
-            currentSeats = emptyGrid(null); selectedBankNum = null; selectedSeatRC = null; render();
+            currentSeats = emptyGrid(null); selectedBankNum = null; selectedSeatRC = null;
+            seatsEdited(); render();
         };
         document.getElementById('autoBtn').onclick = function () {
             currentSeats = emptyGrid(null);
@@ -4264,7 +4264,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                     }
                 }
             }
-            selectedBankNum = null; selectedSeatRC = null; render();
+            selectedBankNum = null; selectedSeatRC = null;
+            seatsEdited(); render();
         };
         document.getElementById('goRandomBtn').onclick = function () { goView('seats.random'); };
         attachBankInteractions();
@@ -4321,6 +4322,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             ev.preventDefault();
             if (dragSource && dragSource.kind === 'seat') {
                 currentSeats[dragSource.r][dragSource.c] = null;
+                seatsEdited();
                 dragSource = null;
                 render();
             }
@@ -4374,6 +4376,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             if (hot) { hot.className = hot.className.replace(/ dropTarget/g, ''); hot = null; }
             var t = rc(ev.target);
             if (!t || !dragSource || !enabledSeats[t.r][t.c]) return;
+            seatsEdited();
             if (dragSource.kind === 'bank') {
                 currentSeats[t.r][t.c] = dragSource.num;
             } else {
@@ -4387,11 +4390,14 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         };
     }
 
+    // Hand edits define the current seating, so a previous random result goes stale.
+    function seatsEdited() { hasResult = false; viewSelectedRC = null; }
     function handlePlaceClick(r, c) {
         if (!enabledSeats[r][c]) return;
         if (selectedBankNum != null) {
             currentSeats[r][c] = selectedBankNum;
             selectedBankNum = null; selectedSeatRC = null;
+            seatsEdited();
             render(); return;
         }
         if (selectedSeatRC) {
@@ -4400,7 +4406,9 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             var t = currentSeats[r][c];
             currentSeats[r][c] = currentSeats[sr][sc];
             currentSeats[sr][sc] = t;
-            selectedSeatRC = null; render(); return;
+            selectedSeatRC = null;
+            seatsEdited();
+            render(); return;
         }
         if (currentSeats[r][c] != null) { selectedSeatRC = { r: r, c: c }; render(); }
     }
@@ -4852,7 +4860,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 for (si = 0; si < dk.seats.length; si++) {
                     c = dk.seats[si];
                     list.push({
-                        x: x, y: y, w: cw, h: S_CELL_H,
+                        r: r, c: c, x: x, y: y, w: cw, h: S_CELL_H,
                         on: !!(enabledSeats[r] && enabledSeats[r][c]),
                         num: src[r] ? src[r][c] : null
                     });
@@ -4879,7 +4887,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             if (deg === 90)       { nx = b.h - e.y - e.h; ny = e.x;              nw = e.h; nh = e.w; }
             else if (deg === 180) { nx = b.w - e.x - e.w; ny = b.h - e.y - e.h;  nw = e.w; nh = e.h; }
             else                  { nx = e.y;             ny = b.w - e.x - e.w;  nw = e.h; nh = e.w; }
-            out.push({ x: nx, y: ny, w: nw, h: nh, on: e.on, num: e.num });
+            out.push({ r: e.r, c: e.c, x: nx, y: ny, w: nw, h: nh, on: e.on, num: e.num });
         }
         return {
             list: out,
@@ -4897,7 +4905,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             paper: 'land',
             theme: 'paper',
             deskSide: 'bottom',
-            label: '이름',
+            label: '번호+이름',
             cellFont: 17,
             els: [
                 { id: 'title', kind: 'title', x: (SHEET_W - 460) / 2, y: 38, w: 460, size: 34 },
@@ -5095,7 +5103,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     function renderInspector() {
         var h = '';
         if (!selEl) {
-            h += '<span class="hintdim">클릭해서 선택, 텍스트는 더블클릭해서 수정</span>';
+            h += '<span class="hintdim">자리를 더블클릭하면 노트(반장 등)를 적을 수 있습니다</span>';
             return h;
         }
         if (selEl.kind === 'board') {
@@ -5227,13 +5235,20 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                     if (cell.num == null) { col = th.off; txt = th.sub; }
                     else if (sheet.theme === 'paper') { col = '#ffffff'; txt = '#000000'; }
                     else { col = ((students[cell.num] || {}).gender === 'F') ? th.f : th.m; txt = '#ffffff'; }
+                    var editSeat = (editingSeat && editingSeat.r === cell.r && editingSeat.c === cell.c);
+                    if (editSeat && !lines.some(function (l) { return l.note; })) {
+                        lines = lines.concat([{ t: '', rel: 0.62, note: true }]);
+                    }
                     var fpx = fitSeatFont(lines, cell.w, cell.h, sheet.cellFont), li, inner = '';
                     for (li = 0; li < lines.length; li++) {
                         inner += '<span class="sLine' + (lines[li].note ? ' sNote' : '') +
+                            (editSeat && lines[li].note ? ' noteEdit" contenteditable="true" spellcheck="false' : '') +
                             '" style="font-size:' + Math.max(6, Math.round(fpx * lines[li].rel)) + 'px;' +
                             (lines[li].rel < 1 ? 'font-weight:600;' : '') + '">' + escapeHtml(lines[li].t) + '</span>';
                     }
-                    h += '<div class="sCell" style="left:' + cell.x + 'px;top:' + cell.y + 'px;width:' + cell.w +
+                    h += '<div class="sCell' + (cell.num != null ? ' sSeat' : '') + '"' +
+                        (cell.num != null ? ' data-seat="' + cell.r + ',' + cell.c + '"' : '') +
+                        ' style="left:' + cell.x + 'px;top:' + cell.y + 'px;width:' + cell.w +
                         'px;height:' + cell.h + 'px;background:' + col + ';color:' + txt +
                         ';border-color:' + (sheet.theme === 'paper' ? th.line : 'transparent') + ';">' + inner + '</div>';
                 }
@@ -5260,6 +5275,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     // ---- drag / add-text on the sheet ----
     var sheetDrag = null;
     var editingEl = null, editOrig = '', editCancel = false, lastDown = null;
+    var editingSeat = null;   // {r,c} whose note is being typed on the sheet
     function markSelection() {
         var page = document.getElementById('sheetPage');
         if (!page) return;
@@ -5290,6 +5306,35 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             while (node && node !== page) {
                 if (node.getAttribute && node.getAttribute('data-el')) { id = node.getAttribute('data-el'); break; }
                 node = node.parentNode;
+            }
+            if (editingSeat) {
+                var inNote = false, nd = ev.target;
+                while (nd && nd !== page) {
+                    if (nd.className && String(nd.className).indexOf('noteEdit') >= 0) { inNote = true; break; }
+                    nd = nd.parentNode;
+                }
+                if (inNote) return;
+                ev.preventDefault();
+                commitSeatNote();
+                return;
+            }
+            // double click on a seat edits that student's note
+            var seatNode = ev.target, seatKey = null;
+            while (seatNode && seatNode !== page) {
+                if (seatNode.getAttribute && seatNode.getAttribute('data-seat')) { seatKey = seatNode.getAttribute('data-seat'); break; }
+                seatNode = seatNode.parentNode;
+            }
+            var seatTracked = false;
+            if (seatKey && printTool === 'move') {
+                var tnow = Date.now();
+                if (lastDown && lastDown.id === 'seat:' + seatKey && tnow - lastDown.t < 450) {
+                    lastDown = null;
+                    ev.preventDefault();
+                    startSeatNote(parseInt(seatKey.split(',')[0], 10), parseInt(seatKey.split(',')[1], 10));
+                    return;
+                }
+                lastDown = { id: 'seat:' + seatKey, t: tnow };
+                seatTracked = true;   // keep this, the board must not overwrite it below
             }
             if (editingEl) {
                 // clicks inside the editor just move the caret
@@ -5322,7 +5367,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 startInlineEdit(e);
                 return;
             }
-            lastDown = { id: id, t: now };
+            if (!seatTracked) lastDown = { id: id, t: now };
             var reselect = (selEl !== e);
             selEl = e;
             markSelection();
@@ -5330,6 +5375,50 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                           sc: scaleOf(), node: document.querySelector('[data-el="' + id + '"]'),
                           moved: false, reselect: reselect };
         };
+    }
+    function startSeatNote(r, c) {
+        var src = hasResult ? newSeats : currentSeats;
+        var num = src[r] && src[r][c];
+        if (num == null) return;
+        editingSeat = { r: r, c: c, num: num };
+        editOrig = (students[num] || {}).note || '';
+        editCancel = false;
+        selEl = elById('board');
+        sheetDrag = null;
+        render();
+        var node = document.querySelector('.noteEdit');
+        if (!node) { editingSeat = null; return; }
+        node.oninput = function () {
+            if (!students[num]) students[num] = { name: '', gender: 'M' };
+            students[num].note = node.textContent;
+        };
+        node.onkeydown = function (ev) {
+            if (ev.key === 'Enter') { ev.preventDefault(); node.blur(); }
+            else if (ev.key === 'Escape') { ev.preventDefault(); editCancel = true; node.blur(); }
+        };
+        node.onpaste = function (ev) {
+            var t = (ev.clipboardData || window.clipboardData).getData('text') || '';
+            ev.preventDefault();
+            t = t.replace(/[\r\n]+/g, ' ');
+            if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                document.execCommand('insertText', false, t);
+            } else node.textContent += t;
+            students[num].note = node.textContent;
+        };
+        node.onblur = function () { commitSeatNote(true); };
+        node.focus();
+        var sel = window.getSelection(), range = document.createRange();
+        range.selectNodeContents(node);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+    function commitSeatNote(defer) {
+        var st = editingSeat;
+        if (!st) return;
+        editingSeat = null;
+        var stu = students[st.num] || (students[st.num] = { name: '', gender: 'M' });
+        stu.note = editCancel ? editOrig : trim(String(stu.note || '').replace(/\s+/g, ' ')).substring(0, 16);
+        if (defer) setTimeout(render, 0); else render();
     }
     function startInlineEdit(e) {
         editingEl = e;
@@ -5820,7 +5909,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             paper: o.paper === 'port' ? 'port' : 'land',
             theme: THEMES[o.theme] ? o.theme : 'paper',
             deskSide: o.deskSide || 'bottom',
-            label: o.label || '이름',
+            label: o.label || '번호+이름',
             cellFont: o.cellFont || 17,
             els: o.els
         };
