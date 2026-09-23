@@ -77,6 +77,8 @@ body::before {
     border-color: rgba(132,176,255,0.34);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.16);
 }
+.navTop .navCaret { margin-left: auto; font-size: 10px; opacity: .55; }
+.navTop.open .navCaret { opacity: .9; }
 .navIco { flex: 0 0 20px; width: 20px; height: 20px; display: block; }
 .navSubs {
     margin: 4px 0 12px 21px;
@@ -425,7 +427,8 @@ body::before {
 .colChk { width: 44px; }
 .colNum { width: 70px; }
 .colGen { width: 70px; }
-.colCond { width: 110px; }
+.colCond { width: 92px; }
+.colNote { width: 116px; }
 .gTagM { color: #7fb0ff; }
 .gTagF { color: #f193ba; }
 input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #4183fb; }
@@ -572,6 +575,7 @@ input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: 
 .spark { position: fixed; z-index: 96; width: 9px; height: 9px; border-radius: 50%; pointer-events: none; }
 
 /* ============ INLINE EDIT TABLE ============ */
+.noteInput { max-width: 130px; }
 .cellInput {
     width: 100%;
     max-width: 210px;
@@ -689,6 +693,9 @@ input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: 
 }
 .numbox:focus, .txtbox:focus { border-color: rgba(120,165,255,0.6); }
 .hintdim { font-size: 13px; color: #7d8797; }
+.sCell { flex-direction: column; }
+.sLine { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.18; }
+.sNote { opacity: .85; }
 .sheetBar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
 @media (max-width: 860px) {
     .sheetArea { gap: 8px; }
@@ -805,7 +812,8 @@ input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: 
     .tableWrap { max-height: 400px; }
     .colNum { width: 46px; }
     .colChk { width: 48px; }
-    .colCond { width: 78px; }
+    .colCond { width: 62px; }
+    .colNote { width: 74px; }
     .numbtn { width: 50px; padding: 9px 0; font-size: 13px; }
 }
 @media (max-width: 520px) {
@@ -3241,6 +3249,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     var newSeats = [];
 
     var view = 'class.size';
+    var navOpen = 'class';   // which sidebar group is expanded
     var condEditNum = null;
     var checkedRows = {};
     var selectedBankNum = null;
@@ -3511,17 +3520,20 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     function currentGroup() { return view.split('.')[0]; }
     var navSig = null;
     function renderSidebar() {
-        if (navSig === view) return;
-        navSig = view;
+        var sig = view + '|' + navOpen;
+        if (navSig === sig) return;
+        navSig = sig;
         var sb = document.getElementById('sidebar');
         var html = '<div class="navBrand">자리 바꾸기</div>';
         var g, i, j, sub, active = currentGroup();
         for (i = 0; i < GROUPS.length; i++) {
             g = GROUPS[i];
             html += '<div class="navGroup">';
-            html += '<button class="navTop' + (g.id === active ? ' active' : '') + '" data-g="' + g.id + '">' +
-                ICONS[g.id] + '<span>' + g.label + '</span></button>';
-            if (g.id === active) {
+            html += '<button class="navTop' + (g.id === active ? ' active' : '') +
+                (g.id === navOpen ? ' open' : '') + '" data-g="' + g.id + '">' +
+                ICONS[g.id] + '<span>' + g.label + '</span>' +
+                '<span class="navCaret">' + (g.id === navOpen ? '&#9662;' : '&#9656;') + '</span></button>';
+            if (g.id === navOpen) {
                 html += '<div class="navSubs">';
                 for (j = 0; j < g.subs.length; j++) {
                     sub = g.subs[j];
@@ -3535,9 +3547,11 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var tops = sb.querySelectorAll('[data-g]'), k;
         for (k = 0; k < tops.length; k++) {
             (function (el) {
+                // the header only opens and closes its list; moving happens on a sub item
                 el.onclick = function () {
-                    var gid = el.getAttribute('data-g'), n;
-                    for (n = 0; n < GROUPS.length; n++) if (GROUPS[n].id === gid) { goView(GROUPS[n].subs[0].id); return; }
+                    var gid = el.getAttribute('data-g');
+                    navOpen = (navOpen === gid) ? '' : gid;
+                    renderSidebar();
                 };
             })(tops[k]);
         }
@@ -3546,13 +3560,15 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             (function (el) { el.onclick = function () { goView(el.getAttribute('data-v')); }; })(subsEls[k]);
         }
     }
+    // used whenever the app moves itself, so the matching group opens up
+    function setView(v) { view = v; navOpen = v.split('.')[0]; }
     function goView(v) {
         if (revealing) return;
         if (editingEl) { var ed = editingEl; editingEl = null; ed.text = trim(ed.text || ''); if (!ed.text) {
             var k; for (k = 0; k < sheet.els.length; k++) if (sheet.els[k] === ed) { sheet.els.splice(k, 1); break; } } }
         commitSizeInputs(true);
         commitEditInputs();
-        view = v;
+        setView(v);
         condEditNum = null;
         selectedBankNum = null;
         selectedSeatRC = null;
@@ -3713,12 +3729,12 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 if (!el) return;
                 el.oninput = function () { refreshPreview(); };
                 el.onkeydown = function (ev) {
-                    if (ev.keyCode === 13 && commitSizeInputs(false)) { view = 'class.seatuse'; render(); }
+                    if (ev.keyCode === 13 && commitSizeInputs(false)) { setView('class.seatuse'); render(); }
                 };
             })(document.getElementById(ids[i]));
         }
         document.getElementById('applyBtn').onclick = function () {
-            if (commitSizeInputs(false)) { view = 'class.seatuse'; render(); }
+            if (commitSizeInputs(false)) { setView('class.seatuse'); render(); }
         };
         document.getElementById('loadBtn').onclick = function () { openLoadDialog('loadFileC'); };
         document.getElementById('loadFileC').onchange = function () { loadFromSelectedFile('loadFileC', false); };
@@ -3888,7 +3904,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         html += '<div class="title">학생 보기</div>';
         html += '<div class="tableWrap"><table class="stable"><thead><tr>';
         html += '<th class="colChk"><input type="checkbox" id="chkAll"></th>';
-        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colCond">조건</th>';
+        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colNote">노트</th><th class="colCond">조건</th>';
         html += '</tr></thead><tbody>';
         var n, s, absent;
         for (n = 1; n <= studentCount; n++) {
@@ -3898,10 +3914,11 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             html += '<td class="colChk"><input type="checkbox" class="rowChk" data-n="' + n + '"' + (checkedRows[n] ? ' checked' : '') + '></td>';
             html += '<td class="colNum">' + n + '</td>';
             if (absent) {
-                html += '<td>-</td><td class="colGen">-</td><td class="colCond">-</td>';
+                html += '<td>-</td><td class="colGen">-</td><td class="colNote">-</td><td class="colCond">-</td>';
             } else {
                 html += '<td>' + (s.name ? escapeHtml(s.name) : '<span style="color:#66707e">이름 없음</span>') + '</td>';
                 html += '<td class="colGen ' + (s.gender === 'F' ? 'gTagF' : 'gTagM') + '">' + (s.gender === 'F' ? '여' : '남') + '</td>';
+                html += '<td class="colNote">' + (s.note ? escapeHtml(s.note) : '<span style="color:#66707e">-</span>') + '</td>';
                 html += '<td class="colCond"><button class="btn tiny ' + (hasAnyCondition(n) ? 'orange' : 'primary') + '" data-cond="' + n + '">' +
                     (hasAnyCondition(n) ? '수정' : '설정') + '</button></td>';
             }
@@ -3973,7 +3990,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             render();
         };
         document.getElementById('editBtn').onclick = function () {
-            view = 'students.edit';
+            setView('students.edit');
             render();
         };
         document.getElementById('optCtrl').onchange = function () { condOnCtrl = this.checked; };
@@ -3989,7 +4006,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         html += '<div class="title">학생 수정</div>';
         html += '<div class="tableWrap"><table class="stable"><thead><tr>';
         html += '<th class="colChk">결번</th>';
-        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colCond">조건</th>';
+        html += '<th class="colNum">번호</th><th>이름</th><th class="colGen">성별</th><th class="colNote">노트</th><th class="colCond">조건</th>';
         html += '</tr></thead><tbody>';
         var n, sObj, absent;
         for (n = 1; n <= studentCount; n++) {
@@ -4002,6 +4019,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 escapeHtml(sObj.name || '') + '" placeholder="이름"' + (absent ? ' disabled' : '') + '></td>';
             html += '<td class="colGen"><button class="genBtn' + (sObj.gender === 'F' ? ' f' : '') + '" data-gen="' + n + '"' +
                 (absent ? ' disabled' : '') + '>' + (sObj.gender === 'F' ? '여' : '남') + '</button></td>';
+            html += '<td class="colNote"><input class="cellInput noteInput" type="text" maxlength="12" data-note="' + n +
+                '" value="' + escapeHtml(sObj.note || '') + '" placeholder="예: 반장"' + (absent ? ' disabled' : '') + '></td>';
             if (absent) {
                 html += '<td class="colCond">-</td>';
             } else {
@@ -4020,17 +4039,23 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         // typing writes straight to state, so no re-render can steal focus mid-word
         body.oninput = function (ev) {
             var el = ev.target;
-            if (!el.getAttribute || el.getAttribute('data-name') === null) return;
-            var num = parseInt(el.getAttribute('data-name'), 10);
+            if (!el.getAttribute) return;
+            var fld = el.getAttribute('data-name') !== null ? 'name' :
+                      (el.getAttribute('data-note') !== null ? 'note' : '');
+            if (!fld) return;
+            var num = parseInt(el.getAttribute('data-' + fld), 10);
             if (!students[num]) students[num] = { name: '', gender: 'M' };
-            students[num].name = trim(el.value);
+            students[num][fld] = trim(el.value);
         };
         body.onkeydown = function (ev) {
             if (ev.keyCode !== 13) return;
             var el = ev.target;
-            if (!el.getAttribute || el.getAttribute('data-name') === null) return;
+            if (!el.getAttribute) return;
+            var fld = el.getAttribute('data-name') !== null ? 'name' :
+                      (el.getAttribute('data-note') !== null ? 'note' : '');
+            if (!fld) return;
             ev.preventDefault();
-            focusNameField(parseInt(el.getAttribute('data-name'), 10), ev.shiftKey ? -1 : 1);
+            focusField(fld, parseInt(el.getAttribute('data-' + fld), 10), ev.shiftKey ? -1 : 1);
         };
         body.onchange = function (ev) {
             var el = ev.target;
@@ -4073,16 +4098,17 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             }
         };
         document.getElementById('doneStu').onclick = function () {
-            commitEditInputs(); view = 'students.list'; render();
+            commitEditInputs(); setView('students.list'); render();
         };
         focusNameField(0, 1);
     }
 
     // Move the caret to the next/previous editable name field.
-    function focusNameField(fromNum, dir) {
+    function focusNameField(fromNum, dir) { return focusField('name', fromNum, dir); }
+    function focusField(kind, fromNum, dir) {
         var n = fromNum + dir, el;
         while (n >= 1 && n <= studentCount) {
-            el = document.querySelector('[data-name="' + n + '"]');
+            el = document.querySelector('[data-' + kind + '="' + n + '"]');
             if (el && !el.disabled) {
                 el.focus();
                 try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {}
@@ -4101,6 +4127,13 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             num = parseInt(els[i].getAttribute('data-name'), 10);
             if (!students[num]) students[num] = { name: '', gender: 'M' };
             students[num].name = trim(els[i].value);
+        }
+        var ns = document.querySelectorAll('[data-note]');
+        for (i = 0; i < ns.length; i++) {
+            if (ns[i].disabled) continue;
+            num = parseInt(ns[i].getAttribute('data-note'), 10);
+            if (!students[num]) students[num] = { name: '', gender: 'M' };
+            students[num].note = trim(ns[i].value);
         }
     }
 
@@ -4862,7 +4895,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var bs = boardPixelSize();
         return {
             paper: 'land',
-            theme: 'light',
+            theme: 'paper',
             deskSide: 'bottom',
             label: '이름',
             cellFont: 17,
@@ -4901,13 +4934,54 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         return null;
     }
     function sheetTitleText() { return className ? className + ' 자리배치표' : '자리배치표'; }
-    function seatLabel(num) {
-        if (num == null) return '';
+    // Lines of a seat, each with a size relative to the base font.
+    function seatLines(num) {
+        if (num == null) return [];
         var st = students[num] || {};
         var nm = st.name || '';
-        if (sheet.label === '번호') return num + '번';
-        if (sheet.label === '번호+이름') return nm ? num + ' ' + nm : num + '번';
-        return nm || (num + '번');
+        var note = trim(st.note || '');
+        var out = [];
+        if (sheet.label === '번호') out.push({ t: num + '번', rel: 1 });
+        else if (sheet.label === '번호+이름') {
+            // stacked, so a 3-seat desk still fits
+            if (nm) { out.push({ t: String(num), rel: 0.62 }); out.push({ t: nm, rel: 1 }); }
+            else out.push({ t: num + '번', rel: 1 });
+        } else out.push({ t: nm || (num + '번'), rel: 1 });
+        if (note) out.push({ t: note, rel: 0.62, note: true });
+        return out;
+    }
+    function seatLabel(num) {
+        var l = seatLines(num), i, out = [];
+        for (i = 0; i < l.length; i++) out.push(l[i].t);
+        return out.join(' ');
+    }
+    // Shared measuring canvas so the screen and the exported image agree exactly.
+    var measCv = null;
+    function measCtx() {
+        if (!measCv) measCv = document.createElement('canvas');
+        return measCv.getContext('2d');
+    }
+    function fontOf(px, weight) {
+        return weight + ' ' + px + 'px "Noto Sans KR","Malgun Gothic",sans-serif';
+    }
+    // Largest base size at which every line fits the cell, width and height.
+    function fitSeatFont(lines, cellW, cellH, startPx) {
+        if (!lines.length) return startPx;
+        var g = measCtx(), px = startPx, i, w, relSum = 0, ok;
+        for (i = 0; i < lines.length; i++) relSum += lines[i].rel;
+        var maxByHeight = Math.floor((cellH - 6) / (relSum * 1.18));
+        if (px > maxByHeight) px = maxByHeight;
+        while (px > 6) {
+            ok = true;
+            for (i = 0; i < lines.length; i++) {
+                g.font = fontOf(Math.max(6, Math.round(px * lines[i].rel)), lines[i].rel < 1 ? '600' : 'bold');
+                w = g.measureText(lines[i].t).width;
+                if (w > cellW - 6) { ok = false; break; }
+            }
+            if (ok) break;
+            px -= 1;
+        }
+        return Math.max(6, px);
     }
     var THEMES = {
         dark:  { bg: '#20242a', panel: '#171a1f', line: '#3b4350', text: '#ffffff',
@@ -4917,13 +4991,13 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         paper: { bg: '#ffffff', panel: '#ffffff', line: '#333a44', text: '#000000',
                  sub: '#444c58', m: '#ffffff', f: '#ffffff', off: '#f0f0f0' }
     };
-    var THEME_ORDER = ['light', 'paper', 'dark'];
+    var THEME_ORDER = ['paper', 'light', 'dark'];
     function faintColor(th) { return th.sub; }
 
     // ====== VIEW: 출력 ======
     function renderPrintSheet(app) {
         ensureSheet();
-        var th = THEMES[sheet.theme] || THEMES.light;
+        var th = THEMES[sheet.theme] || THEMES.paper;
         var html = '';
         html += '<div class="panel wide">';
         html += '<div class="title">자리배치표 출력</div>';
@@ -5060,7 +5134,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     function repaintSheet() {
         var outer = document.getElementById('sheetOuter');
         if (!outer) return;
-        outer.innerHTML = renderSheetInner(THEMES[sheet.theme] || THEMES.light);
+        outer.innerHTML = renderSheetInner(THEMES[sheet.theme] || THEMES.paper);
         bindSheetDrag();
         schedulePrintRefresh();
     }
@@ -5149,14 +5223,19 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 for (k = 0; k < b.list.length; k++) {
                     cell = b.list[k];
                     if (!cell.on) continue;
-                    lab = seatLabel(cell.num);
+                    var lines = seatLines(cell.num);
                     if (cell.num == null) { col = th.off; txt = th.sub; }
                     else if (sheet.theme === 'paper') { col = '#ffffff'; txt = '#000000'; }
                     else { col = ((students[cell.num] || {}).gender === 'F') ? th.f : th.m; txt = '#ffffff'; }
+                    var fpx = fitSeatFont(lines, cell.w, cell.h, sheet.cellFont), li, inner = '';
+                    for (li = 0; li < lines.length; li++) {
+                        inner += '<span class="sLine' + (lines[li].note ? ' sNote' : '') +
+                            '" style="font-size:' + Math.max(6, Math.round(fpx * lines[li].rel)) + 'px;' +
+                            (lines[li].rel < 1 ? 'font-weight:600;' : '') + '">' + escapeHtml(lines[li].t) + '</span>';
+                    }
                     h += '<div class="sCell" style="left:' + cell.x + 'px;top:' + cell.y + 'px;width:' + cell.w +
                         'px;height:' + cell.h + 'px;background:' + col + ';color:' + txt +
-                        ';font-size:' + sheet.cellFont + 'px;border-color:' +
-                        (sheet.theme === 'paper' ? th.line : 'transparent') + ';">' + escapeHtml(lab) + '</div>';
+                        ';border-color:' + (sheet.theme === 'paper' ? th.line : 'transparent') + ';">' + inner + '</div>';
                 }
                 h += '</div>';
             } else if (e.locked) {
@@ -5341,7 +5420,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
     }
     function renderSheetToCanvas(scale) {
         ensureSheet();
-        var th = THEMES[sheet.theme] || THEMES.light;
+        var th = THEMES[sheet.theme] || THEMES.paper;
         var cv = document.createElement('canvas');
         cv.width = Math.round(SHEET_W * scale);
         cv.height = Math.round(SHEET_H * scale);
@@ -5386,7 +5465,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 for (k = 0; k < b.list.length; k++) {
                     cell = b.list[k];
                     if (!cell.on) continue;
-                    lab = seatLabel(cell.num);
+                    var clines = seatLines(cell.num);
                     if (cell.num == null) { col = th.off; txt = th.sub; }
                     else if (sheet.theme === 'paper') { col = '#ffffff'; txt = '#000000'; }
                     else { col = ((students[cell.num] || {}).gender === 'F') ? th.f : th.m; txt = '#ffffff'; }
@@ -5394,10 +5473,22 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                     roundRect(g, e.x + cell.x, e.y + cell.y, cell.w, cell.h, 9);
                     g.fill();
                     if (sheet.theme === 'paper') { g.strokeStyle = th.line; g.lineWidth = 1.1; g.stroke(); }
-                    if (lab) {
+                    if (clines.length) {
+                        var cpx = fitSeatFont(clines, cell.w, cell.h, sheet.cellFont), ci, lh = [], tot = 0, sz;
+                        for (ci = 0; ci < clines.length; ci++) {
+                            sz = Math.max(6, Math.round(cpx * clines[ci].rel));
+                            lh.push(sz);
+                            tot += sz * 1.18;
+                        }
+                        var cy = e.y + cell.y + cell.h / 2 - tot / 2;
                         g.fillStyle = txt;
-                        fitText(g, lab, cell.w - 10, sheet.cellFont, 'bold');
-                        g.fillText(lab, e.x + cell.x + cell.w / 2, e.y + cell.y + cell.h / 2 + 1);
+                        for (ci = 0; ci < clines.length; ci++) {
+                            g.font = fontOf(lh[ci], clines[ci].rel < 1 ? '600' : 'bold');
+                            g.globalAlpha = clines[ci].note ? 0.85 : 1;
+                            g.fillText(clines[ci].t, e.x + cell.x + cell.w / 2, cy + lh[ci] * 1.18 / 2);
+                            cy += lh[ci] * 1.18;
+                        }
+                        g.globalAlpha = 1;
                     }
                 }
             } else {
@@ -5444,7 +5535,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             var out = document.createElement('canvas');
             out.width = cv.width; out.height = cv.height;
             var g = out.getContext('2d');
-            g.fillStyle = (THEMES[sheet.theme] || THEMES.light).bg;
+            g.fillStyle = (THEMES[sheet.theme] || THEMES.paper).bg;
             g.fillRect(0, 0, out.width, out.height);
             g.drawImage(cv, 0, 0);
             downloadBlob(new Blob([dataUrlToBytes(out.toDataURL('image/jpeg', 0.94))], { type: 'image/jpeg' }), sheetFileName('jpg'));
@@ -5459,7 +5550,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var tmp = document.createElement('canvas');
         tmp.width = cv.width; tmp.height = cv.height;
         var g = tmp.getContext('2d');
-        g.fillStyle = (THEMES[sheet.theme] || THEMES.light).bg;
+        g.fillStyle = (THEMES[sheet.theme] || THEMES.paper).bg;
         g.fillRect(0, 0, tmp.width, tmp.height);
         g.drawImage(cv, 0, 0);
         var jpg = dataUrlToBytes(tmp.toDataURL('image/jpeg', 0.94));
@@ -5578,7 +5669,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var tmp = document.createElement('canvas');
         tmp.width = cv.width; tmp.height = cv.height;
         var g = tmp.getContext('2d');
-        g.fillStyle = (THEMES[sheet.theme] || THEMES.light).bg;
+        g.fillStyle = (THEMES[sheet.theme] || THEMES.paper).bg;
         g.fillRect(0, 0, tmp.width, tmp.height);
         g.drawImage(cv, 0, 0);
         var png = dataUrlToBytes(cv.toDataURL('image/png'));
@@ -5727,7 +5818,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         if (!o || !o.els) return false;
         sheet = {
             paper: o.paper === 'port' ? 'port' : 'land',
-            theme: THEMES[o.theme] ? o.theme : 'light',
+            theme: THEMES[o.theme] ? o.theme : 'paper',
             deskSide: o.deskSide || 'bottom',
             label: o.label || '이름',
             cellFont: o.cellFont || 17,
@@ -5776,7 +5867,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var names = {}, i, n;
         for (i = 0; i < participants.length; i++) {
             n = participants[i];
-            names[n] = [(students[n] || {}).name || '', (students[n] || {}).gender || 'M'];
+            names[n] = [(students[n] || {}).name || '', (students[n] || {}).gender || 'M', (students[n] || {}).note || ''];
         }
         var off = [];
         for (r = 0; r < rows; r++) for (c = 0; c < NC(); c++) if (!enabledSeats[r][c]) off.push(r + ',' + c);
@@ -5899,7 +5990,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         students = {};
         participants = [];
         for (var k in o.names) if (o.names.hasOwnProperty(k)) {
-            students[+k] = { name: o.names[k][0], gender: o.names[k][1] };
+            students[+k] = { name: o.names[k][0], gender: o.names[k][1], note: o.names[k][2] || '' };
             participants.push(+k);
         }
         participants.sort(function (a, b) { return a - b; });
@@ -5911,7 +6002,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         }
         hasResult = true;
         applyFormat(o.fmt);
-        view = 'print.sheet';
+        setView('print.sheet');
         render();
         return true;
     }
@@ -5939,6 +6030,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             num = participants[i];
             s = students[num] || { name: '', gender: 'M' };
             lines.push('S;' + num + ';"' + escapeTextName(s.name || '') + '";' + (s.gender || 'M'));
+            if (trim(s.note || '')) lines.push('N;' + num + ';"' + escapeTextName(s.note) + '"');
         }
         var out = hasResult ? newSeats : currentSeats;
         for (r = 0; r < rows; r++) for (c = 0; c < NC(); c++) {
@@ -5990,8 +6082,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             if (parseLoadedText(text, studentsOnly)) {
                 condEditNum = null; checkedRows = {};
                 viewSelectedRC = null; selectedBankNum = null; selectedSeatRC = null;
-                if (studentsOnly) { view = 'students.list'; }
-                else { view = 'seats.random'; hasResult = true; }
+                if (studentsOnly) { setView('students.list'); }
+                else { setView('seats.random'); hasResult = true; }
                 render();
             }
         };
@@ -6004,7 +6096,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
         var lines = normalized.split('\n');
         var metaRows = null, metaCols = null, metaCount = null, metaAbsent = null, metaDisabled = null;
         var metaName = null, metaTriple = null;
-        var loadedStudents = {}, placements = [], condF = {}, condG = {}, condS = {};
+        var loadedStudents = {}, loadedNotes = {}, placements = [], condF = {}, condG = {}, condS = {};
         var i, line, m, num, parsedAbs, parts, k, rr, cc;
 
         for (i = 0; i < lines.length; i++) {
@@ -6023,6 +6115,8 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
                 loadedStudents[num] = { name: m[2].replace(/""/g, '"'), gender: m[3].toUpperCase() };
                 continue;
             }
+            m = line.match(/^N\s*;\s*(\d+)\s*;\s*"((?:[^"]|"")*)"\s*$/i);
+            if (m) { loadedNotes[parseInt(m[1], 10)] = m[2].replace(/""/g, '"'); continue; }
             m = line.match(/^P\s*;\s*(\d+)\s*;\s*(\d+)\s*;\s*(\d+)\s*$/i);
             if (m) { placements.push({ r: parseInt(m[1], 10), c: parseInt(m[2], 10), num: parseInt(m[3], 10) }); continue; }
             m = line.match(/^CF\s*;\s*(\d+)\s*;\s*(\d+)\s*$/i);
@@ -6082,6 +6176,7 @@ qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
             students[num] = ls
                 ? { name: ls.name || '', gender: ls.gender === 'F' ? 'F' : 'M' }
                 : { name: '', gender: 'M' };
+            if (loadedNotes[num]) students[num].note = loadedNotes[num];
         }
 
         if (!studentsOnly) {
